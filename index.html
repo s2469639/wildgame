@@ -286,33 +286,69 @@ main{flex:1;display:flex;flex-direction:column;align-items:center;justify-conten
 #result.lose .em{color:#c9604a;--wash:rgba(200,90,70,.2)}
 
 
-/* ---------- 게임 방법 ---------- */
-.how{width:min(680px,100%);text-align:left}
-.how .howtitle{color:var(--brass);letter-spacing:.3em;font-size:24px;text-align:center;margin-bottom:14px}
-.how h3{font-size:16px;color:var(--brass);letter-spacing:.12em;margin:20px 0 10px;padding-bottom:5px;border-bottom:1px solid #c79a3b55}
+
+/* ---------- 유물 강조 / 공격 / 패시브 ---------- */
+.tile.k-relic:not(.used){transform:translate(-50%,-50%) scale(1.22);z-index:2;
+  filter:drop-shadow(0 0 12px #b79bff) drop-shadow(0 3px 2px rgba(40,20,5,.65))}
+.tile.k-relic:not(.used)::before{content:"";position:absolute;left:50%;top:50%;width:250%;height:250%;border-radius:50%;pointer-events:none;z-index:-1;
+  background:conic-gradient(transparent 0 6%,rgba(190,160,255,.6) 10%,transparent 16% 31%,rgba(190,160,255,.6) 35%,transparent 41% 56%,rgba(190,160,255,.6) 60%,transparent 66% 81%,rgba(190,160,255,.6) 85%,transparent 91%);
+  -webkit-mask:radial-gradient(circle,transparent 16%,#000 18%,transparent 66%);mask:radial-gradient(circle,transparent 16%,#000 18%,transparent 66%);
+  animation:rays 12s linear infinite}
+@keyframes rays{from{transform:translate(-50%,-50%) rotate(0)}to{transform:translate(-50%,-50%) rotate(360deg)}}
+.tile.k-relic:not(.used) .nm{color:#4b2fa0;font-size:calc(var(--tile)*.18);text-shadow:0 0 6px #d6c8ff,0 1px 0 #fff8}
+.tile.attack .rim{background:#ff4a36;box-shadow:0 0 0 2px #fff2c8,0 0 18px #ff4a36;animation:atk .45s ease-in-out infinite alternate}
+@keyframes atk{to{background:#ffb199}}
+.tile.attack .nm{color:#c01808;font-size:calc(var(--tile)*.2);text-shadow:0 0 6px #fff}
+.tile.peek .face{filter:saturate(.75) brightness(.95)}
+.tile.peek .rim{background:#6fa8dc}
+.tile.peek .nm{color:#1f4f86}
+.pawn .rmark{position:absolute;left:0;top:calc(var(--ps,1) * -78px);transform:translate(-50%,-50%);font-size:calc(var(--ps,1) * 28px);color:#e8dcff;
+  --wash:rgba(180,150,255,.75);filter:drop-shadow(0 0 8px #a98bff) drop-shadow(0 0 18px #8f6cff);opacity:0;transition:opacity .3s;animation:rbob 1.3s ease-in-out infinite;z-index:9}
+.pawn .rmark.on{opacity:1}
+@keyframes rbob{50%{margin-top:-6px}}
+#alert{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;z-index:30;opacity:0;
+  background:radial-gradient(ellipse at center,rgba(150,20,10,.45),transparent 65%)}
+#alert.show{animation:alin 2.2s ease-out forwards}
+@keyframes alin{0%{opacity:0;transform:scale(1.7)}10%{opacity:1;transform:scale(1)}78%{opacity:1}100%{opacity:0}}
+.al-big{font-size:clamp(46px,9vw,110px);font-weight:900;letter-spacing:.18em;padding-left:.18em;color:#fff2c8;-webkit-text-stroke:2px #7a1208;
+  text-shadow:0 0 20px #ff4a36,0 5px 0 #7a1208,0 0 46px #ff4a36}
+.al-sub{margin-top:4px;padding:6px 20px;border-radius:4px;border:2px solid #ffdca0;background:rgba(122,18,8,.9);color:#fff;font-weight:800;font-size:clamp(13px,1.9vw,21px)}
+.al-chip{margin-top:6px;padding:3px 14px;border-radius:12px;background:#000a;color:#ffb199;font-weight:800;font-size:clamp(12px,1.6vw,17px)}
+.pbtn .pas{margin-top:6px;padding:5px 8px;border-radius:4px;background:#00000055;border:1px solid #c79a3b55;color:#ffd77a;font-size:11.5px;line-height:1.45;text-align:left;width:100%}
+.pbtn .pas b{color:#fff0b8;display:block;font-size:12px}
+
+/* ---------- 게임 방법 (그림 중심) ---------- */
+.how{width:min(640px,100%);text-align:left}
+.how .howtitle{color:var(--brass);letter-spacing:.3em;font-size:24px;text-align:center;margin-bottom:12px}
+.how h3{font-size:15px;color:var(--brass);letter-spacing:.14em;margin:18px 0 8px;display:flex;align-items:center;gap:8px}
+.how h3::before{content:"";width:8px;height:8px;transform:rotate(45deg);background:var(--brass)}
 .how em{color:#ffd77a;font-style:normal;font-weight:800}
-.how b{color:var(--parch)}
-.goal{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.gbox{padding:12px 14px;border-radius:8px;display:flex;flex-direction:column;gap:3px;font-size:14px;line-height:1.5}
-.gbox b{font-size:17px;letter-spacing:.2em;margin-bottom:2px}
-.gbox.win{background:rgba(199,154,59,.14);border:1px solid #c79a3b99}.gbox.win b{color:#ffd77a}
-.gbox.lose{background:rgba(190,80,60,.14);border:1px solid #be503c88}.gbox.lose b{color:#f0907c}
-.how .note{font-size:13.5px;line-height:1.7;color:var(--parch2);margin-top:10px}
-.steps{list-style:none;counter-reset:s;display:flex;flex-direction:column;gap:7px}
-.steps li{counter-increment:s;display:grid;grid-template-columns:26px 1fr;gap:11px;align-items:center;font-size:14.5px;line-height:1.5;color:var(--parch2)}
-.steps li::before{content:counter(s);height:26px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#d9a441,#8a6420);color:#1d1308;font-weight:900;display:flex;align-items:center;justify-content:center;font-size:14px}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.it{display:flex;gap:11px;align-items:flex-start;padding:10px 12px;background:#00000040;border:1px solid #ffffff18;border-radius:8px}
-.it.wide{grid-column:1 / -1}
-.it .ic{flex:0 0 30px;width:30px;height:30px;color:var(--brass);--wash:rgba(199,154,59,.25);margin-top:1px}
-.it b{display:block;font-size:15px;margin-bottom:2px}
-.it span{font-size:13px;line-height:1.55;color:var(--parch2)}
-.tips{list-style:none;display:flex;flex-direction:column;gap:8px}
-.tips li{position:relative;padding-left:16px;font-size:14px;line-height:1.65;color:var(--parch2)}
-.tips li::before{content:"";position:absolute;left:2px;top:.72em;width:6px;height:6px;transform:rotate(45deg);background:var(--brass)}
-.keys{margin-top:14px;font-size:13px;color:var(--parch3);text-align:center}
+.how .cap{font-size:13.5px;line-height:1.6;color:var(--parch2);margin-top:6px}
+.flow{display:flex;align-items:center;justify-content:space-between;gap:4px;padding:12px 8px;background:#0004;border:1px solid #ffffff18;border-radius:8px}
+.fstep{display:flex;flex-direction:column;align-items:center;gap:5px;flex:1;text-align:center;font-size:13px;font-weight:700}
+.fstep .ic{font-size:44px;color:var(--brass);--wash:rgba(199,154,59,.28)}
+.fstep.relic .ic{color:#cdb8ff;--wash:rgba(160,130,255,.4);filter:drop-shadow(0 0 8px #8f6cff)}
+.farrow{font-size:26px;color:var(--parch3)}
+.farrow .ic{font-size:26px}
+.cards5{display:grid;grid-template-columns:repeat(5,1fr);gap:7px}
+.mc{display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 4px;background:#0004;border:1px solid #ffffff18;border-radius:8px;text-align:center}
+.mc .ic{font-size:30px;color:var(--brass);--wash:rgba(199,154,59,.25)}
+.mc b{font-size:14px}
+.mc span{font-size:12px;line-height:1.35;color:var(--parch2)}
+.steal{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.panel{background:#0004;border:1px solid #ffffff18;border-radius:8px;padding:6px 6px 8px;text-align:center}
+.panel svg.pic{width:100%;height:auto;display:block}
+.panel span{display:block;font-size:12.5px;line-height:1.4;color:var(--parch2);margin-top:2px}
+.panel.hit{border-color:#ff7a62aa;background:rgba(190,60,40,.16)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{padding:5px 11px;border-radius:14px;font-size:13px;font-weight:700;background:rgba(190,80,60,.18);border:1px solid #be503c88;color:#f4b3a4}
+.pas4{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.pa{padding:8px 10px;background:#0004;border:1px solid #ffffff18;border-radius:8px;font-size:12.5px;line-height:1.45;color:var(--parch2)}
+.pa b{display:block;color:var(--parch);font-size:13.5px}
+.pa i{font-style:normal;color:#ffd77a;font-weight:800}
+.keys{margin-top:14px;font-size:12.5px;color:var(--parch3);text-align:center}
 kbd{display:inline-block;min-width:22px;padding:1px 6px;border:1px solid #c79a3b88;border-bottom-width:2px;border-radius:4px;background:#0006;color:var(--parch);font:700 12px var(--serif);text-align:center}
-@media (max-width:640px){.goal,.grid{grid-template-columns:1fr}}
+@media (max-width:640px){.cards5{grid-template-columns:repeat(3,1fr)}.steal{grid-template-columns:1fr}.pas4{grid-template-columns:1fr}}
 
 /* ---------- 함정 ---------- */
 .tile .tm{position:absolute;right:2%;top:-2%;width:calc(var(--tile)*.34);height:calc(var(--tile)*.34);border-radius:50%;display:none;align-items:center;justify-content:center;
@@ -471,6 +507,7 @@ kbd{display:inline-block;min-width:22px;padding:1px 6px;border:1px solid #c79a3b
       <span><svg class="ic"><use href="#i-unknown"/></svg>미지 (점=위험도)</span>
     </div>
     <div id="banner"></div>
+    <div id="alert"></div>
     <div id="msg"></div>
   </div>
 </main>
@@ -511,49 +548,47 @@ kbd{display:inline-block;min-width:22px;padding:1px 6px;border:1px solid #c79a3b
   <div class="sheet dark how"><div class="mbd">
     <h2 class="howtitle">게임 방법</h2>
 
-    <div class="goal">
-      <div class="gbox win"><b>승리</b><span>유물을 들고 <em>캠프</em>에 먼저 도착하기</span><span>또는 상대 체력을 0으로 만들기</span></div>
-      <div class="gbox lose"><b>패배</b><span>내 체력이 0이 되기</span><span>상대가 먼저 귀환하기</span></div>
-    </div>
-    <p class="note">제한은 <em>26턴</em>입니다. 끝까지 아무도 귀환하지 못하면 <em>유물을 든 쪽</em>, 그다음 <em>체력+식량이 많은 쪽</em>이 이깁니다. 무승부는 없습니다.</p>
-
-    <h3>한 턴은 이렇게 흘러갑니다</h3>
-    <ol class="steps">
-      <li><span><b>카드 한 장</b>을 고릅니다.</span></li>
-      <li><span>이동 카드라면 빛나는 타일을 눌러 <b>한 칸</b> 이동합니다. 타일을 바로 눌러도 됩니다.</span></li>
-      <li><span>도착한 타일에서 <b>사건</b>이 벌어지면 선택지 3개 중 하나를 고릅니다.</span></li>
-      <li><span>상대(컴퓨터)에게 차례가 넘어갑니다.</span></li>
-    </ol>
-
-    <h3>카드 5종</h3>
-    <div class="grid">
-      <div class="it"><svg class="ic"><use href="#i-move"/></svg><div><b>이동</b><span>인접 타일로 한 칸.<br>식량 -1 (식량이 없으면 체력 -1)</span></div></div>
-      <div class="it"><svg class="ic"><use href="#i-gather"/></svg><div><b>채집</b><span>제자리에서 식량 +2</span></div></div>
-      <div class="it"><svg class="ic"><use href="#i-guard"/></svg><div><b>방어</b><span>방어막 생성.<br>다음 피해 3을 막아줍니다.</span></div></div>
-      <div class="it"><svg class="ic"><use href="#i-heal"/></svg><div><b>치유</b><span>체력 +3, 식량 -1</span></div></div>
-      <div class="it wide"><svg class="ic"><use href="#i-trap"/></svg><div><b>함정</b><span>내가 서 있는 타일에 <em>보이지 않는 덫</em>을 놓습니다. 식량 -1, 최대 2개.<br>상대가 그 타일에 도착하면 <em>피해 3</em>을 입고 덫은 사라집니다. 나는 밟아도 안전합니다. 캠프에는 놓을 수 없습니다.</span></div></div>
+    <h3>목표</h3>
+    <div class="flow">
+      <div class="fstep"><svg class="ic"><use href="#i-camp"/></svg>캠프에서 출발</div>
+      <div class="farrow">→</div>
+      <div class="fstep relic"><svg class="ic"><use href="#i-relic"/></svg>유물을 찾는다</div>
+      <div class="farrow">→</div>
+      <div class="fstep"><svg class="ic"><use href="#i-camp"/></svg><span><em>먼저</em> 돌아오면 승리!</span></div>
     </div>
 
-    <h3>타일 읽는 법</h3>
-    <div class="grid tiles">
-      <div class="it"><svg class="ic"><use href="#i-camp"/></svg><div><b>캠프</b><span>출발·귀환 지점. 도착하면 체력 +1</span></div></div>
-      <div class="it"><svg class="ic"><use href="#i-relic"/></svg><div><b>유물</b><span>이 게임의 목표. 매 판 위치가 바뀝니다</span></div></div>
-      <div class="it"><svg class="ic"><use href="#i-danger"/></svg><div><b>위험</b><span>피해를 입을 수 있는 사건</span></div></div>
-      <div class="it"><svg class="ic"><use href="#i-food"/></svg><div><b>식량</b><span>식량과 체력을 얻는 사건</span></div></div>
-      <div class="it"><svg class="ic"><use href="#i-reward"/></svg><div><b>보상</b><span>약, 방어막 등을 얻는 사건</span></div></div>
-      <div class="it"><svg class="ic"><use href="#i-unknown"/></svg><div><b>미지</b><span>도착하기 전엔 정체를 모릅니다. 아래 <em>점</em>이 위험도(최대 3)</span></div></div>
+    <h3>내 차례에는 카드 1장</h3>
+    <div class="cards5">
+      <div class="mc"><svg class="ic"><use href="#i-move"/></svg><b>이동</b><span>한 칸 이동<br>식량 -1</span></div>
+      <div class="mc"><svg class="ic"><use href="#i-gather"/></svg><b>채집</b><span>식량 +2</span></div>
+      <div class="mc"><svg class="ic"><use href="#i-guard"/></svg><b>방어</b><span>다음 피해<br>-3</span></div>
+      <div class="mc"><svg class="ic"><use href="#i-heal"/></svg><b>치유</b><span>체력 +3<br>식량 -1</span></div>
+      <div class="mc"><svg class="ic"><use href="#i-trap"/></svg><b>함정</b><span>덫을 놓는다<br>밟으면 피해 3</span></div>
+    </div>
+    <p class="cap">이동하면 그 타일의 <em>사건</em>이 열립니다. 선택지 3개 중 하나를 고르세요. 미지 타일의 <em>점</em>은 위험도입니다.</p>
+
+    <h3>유물 빼앗기</h3>
+    <div class="steal">
+      <div class="panel"><svg class="pic" viewBox="0 0 110 76"><polygon points="9,44 20,26 40,26 51,44 40,62 20,62" fill="#5a4a2e" stroke="#c79a3b" stroke-width="2"/><polygon points="59,44 70,26 90,26 101,44 90,62 70,62" fill="#5a4a2e" stroke="#c79a3b" stroke-width="2"/><circle cx="30" cy="44" r="9" fill="#d9a441" stroke="#000" stroke-width="2"/><circle cx="80" cy="44" r="9" fill="#3fa58b" stroke="#000" stroke-width="2"/><use href="#i-relic" x="71" y="13" width="18" height="18" style="color:#d6c8ff;--wash:rgba(160,130,255,.6);fill:none;stroke:currentColor;stroke-width:4"/></svg><span>상대가 유물을 들고 있다</span></div>
+      <div class="panel"><svg class="pic" viewBox="0 0 110 76"><polygon points="9,44 20,26 40,26 51,44 40,62 20,62" fill="#5a4a2e" stroke="#c79a3b" stroke-width="2"/><polygon points="59,44 70,26 90,26 101,44 90,62 70,62" fill="#5a4a2e" stroke="#c79a3b" stroke-width="2"/><circle cx="30" cy="44" r="9" fill="#d9a441" stroke="#000" stroke-width="2"/><circle cx="80" cy="44" r="9" fill="#3fa58b" stroke="#000" stroke-width="2"/><use href="#i-relic" x="71" y="13" width="18" height="18" style="color:#d6c8ff;--wash:rgba(160,130,255,.6);fill:none;stroke:currentColor;stroke-width:4"/><path d="M42 40 L66 40" stroke="#ffd77a" stroke-width="3" stroke-dasharray="5 4" fill="none"/><path d="M64 33 L74 40 L64 47 Z" fill="#ffd77a"/></svg><span>그 타일로 이동한다</span></div>
+      <div class="panel hit"><svg class="pic" viewBox="0 0 110 76"><polygon points="55,6 61,22 78,18 67,32 82,42 64,44 62,62 52,48 38,58 40,40 22,36 38,28 36,10 50,20" transform="translate(0 0)" fill="#e5483a" opacity=".85" stroke="#fff2c8" stroke-width="2"/><polygon points="9,50 20,32 40,32 51,50 40,68 20,68" fill="#4a3a24" stroke="#c79a3b" stroke-width="2"/><polygon points="59,50 70,32 90,32 101,50 90,68 70,68" fill="#7a2a1e" stroke="#c79a3b" stroke-width="2"/><circle cx="75" cy="52" r="9" fill="#3fa58b" stroke="#000" stroke-width="2"/><circle cx="87" cy="52" r="9" fill="#d9a441" stroke="#000" stroke-width="2"/><use href="#i-relic" x="78" y="19" width="18" height="18" style="color:#d6c8ff;--wash:rgba(160,130,255,.6);fill:none;stroke:currentColor;stroke-width:4"/><text x="55" y="38" text-anchor="middle" font-size="15" font-weight="900" fill="#fff" stroke="#7a1208" stroke-width="3" paint-order="stroke" font-family="Nanum Myeongjo,Noto Serif KR,Batang,serif">공격!</text></svg><span><em>유물을 빼앗고</em><br>상대는 피해 2</span></div>
+    </div>
+    <p class="cap">유물을 든 사람은 쫓기는 처지입니다. 내가 들고 있을 땐 상대가 같은 타일에 오지 못하게 조심하세요.</p>
+
+    <h3>이러면 패배</h3>
+    <div class="chips"><span class="chip">체력 0</span><span class="chip">상대가 먼저 귀환</span><span class="chip">26턴 초과</span></div>
+    <p class="cap">식량이 없으면 이동할 때마다 체력이 깎입니다. 중간에 채집하세요.</p>
+
+    <h3>말마다 다른 능력 (패시브)</h3>
+    <div class="pas4">
+      <div class="pa"><b>탐험가 모자</b><i>채집 +1</i> 식량을 1개 더 얻는다</div>
+      <div class="pa"><b>망원경</b><i>정찰</i> 바로 옆 미지 타일이 미리 보인다</div>
+      <div class="pa"><b>나침반</b><i>방어막 +1</i> 방어막을 쥐고 시작, 피해를 4까지 막는다</div>
+      <div class="pa"><b>랜턴</b><i>치유 +1</i> 치유로 체력을 1 더 회복한다</div>
     </div>
 
-    <h3>알아두면 좋은 것</h3>
-    <ul class="tips">
-      <li>유물은 <b>하나뿐</b>입니다. 유물을 든 사람이 있을 때 <em>같은 타일에 도착하면 유물을 빼앗습니다.</em></li>
-      <li>위험 사건은 <b>반드시 선택</b>해야 하고, 그 외 사건은 닫고 지나칠 수 있습니다(턴은 소모).</li>
-      <li>식량이 모자라면 이동할 때마다 체력이 깎입니다. 중간에 채집하세요.</li>
-      <li><b>혼자 플레이</b>는 컴퓨터와, <b>2인 대전</b>은 한 화면에서 번갈아 겨룹니다. 2인 대전에서는 내 차례에만 내 함정이 보입니다.</li>
-    </ul>
     <p class="keys">단축키 &nbsp; 카드 <kbd>1</kbd>~<kbd>5</kbd> &nbsp; 사건 선택지 <kbd>1</kbd>~<kbd>3</kbd> &nbsp; 음악 <kbd>M</kbd></p>
-
-    <button class="bigbtn alt" id="howClose" style="margin-top:14px">닫기</button>
+    <button class="bigbtn alt" id="howClose" style="margin-top:12px">닫기</button>
   </div></div>
 </div>
 
@@ -708,12 +743,19 @@ const THEME = {
 
 /* ---------- 말(3D) 종류 ---------- */
 const PAWNS = [
-  { id:'hat',     name:'탐험가 모자', desc:'놋쇠 버클이 달린 가죽 모자', build:makeHat },
-  { id:'scope',   name:'망원경',      desc:'놋쇠 마디의 접이식 망원경', build:makeScope },
-  { id:'compass', name:'나침반',      desc:'바늘이 흔들리는 놋쇠 나침반', build:makeCompass },
-  { id:'lantern', name:'랜턴',        desc:'불꽃이 타오르는 등불', build:makeLantern }
+  { id:'hat',     name:'탐험가 모자', desc:'놋쇠 버클이 달린 가죽 모자', build:makeHat,
+    passive:{ name:'넉넉한 배낭', short:'채집 +1', desc:'채집할 때 식량을 1개 더 얻습니다.' } },
+  { id:'scope',   name:'망원경',      desc:'놋쇠 마디의 접이식 망원경', build:makeScope,
+    passive:{ name:'정찰', short:'미지 타일 미리보기', desc:'내 차례에 바로 옆 미지 타일의 정체가 보입니다.' } },
+  { id:'compass', name:'나침반',      desc:'바늘이 흔들리는 놋쇠 나침반', build:makeCompass,
+    passive:{ name:'든든한 방어', short:'방어막 +1', desc:'방어막을 쥐고 시작하고, 방어막이 피해를 1 더(총 4) 막습니다.' } },
+  { id:'lantern', name:'랜턴',        desc:'불꽃이 타오르는 등불', build:makeLantern,
+    passive:{ name:'따뜻한 불빛', short:'치유 +1', desc:'치유 카드로 체력을 1 더 회복합니다.' } }
 ];
 const pawnById = id => PAWNS.find(p => p.id === id);
+const shieldPower = p => p.pawn === 'compass' ? 4 : 3;
+const gatherAmt = p => 2 + (p.pawn === 'hat' ? 1 : 0);
+const healAmt = p => 3 + (p.pawn === 'lantern' ? 1 : 0);
 
 
 /* ---------- 사운드 (배경음악 + 합성 효과음) ---------- */
@@ -812,7 +854,7 @@ function newGame(mode, pawns, cpu) {
     n.hidden = n.id !== 0 && n.type !== 'relic' && Math.random() < .55;
   });
 
-  const mk = i => ({ name: cpu ? (i ? '컴퓨터' : '플레이어') : `플레이어 ${i + 1}`, cpu: !!(cpu && i === 1), pawn:pawns[i], hp:MAX_HP, food:6, relic:false, shield:0, pos:0, alive:true });
+  const mk = i => ({ name: cpu ? (i ? '컴퓨터' : '플레이어') : `플레이어 ${i + 1}`, cpu: !!(cpu && i === 1), pawn:pawns[i], hp:MAX_HP, food:6, relic:false, shield: pawns[i] === 'compass' ? 1 : 0, pos:0, alive:true });
   G = { mode, cpu: !!cpu, cpuCard:null, traps:[], pawns, nodes, relicNode, players: mode === 2 ? [mk(0), mk(1)] : [mk(0)],
         cur:0, turn:1, maxTurn:MAX_TURN, phase:'idle', sel:false, curNode:null };
   $('#maxturn').textContent = MAX_TURN;
@@ -878,7 +920,7 @@ function buildBoard() {
   G.players.forEach((p, i) => {
     const el = document.createElement('div');
     el.className = 'pawn'; el.id = 'pawn' + i;
-    el.innerHTML = '<div class="shadow"></div><div class="hopper"><div class="tilt"><div class="spin"></div></div></div>';
+    el.innerHTML = '<div class="shadow"></div><div class="hopper"><div class="tilt"><div class="spin"></div></div></div><div class="rmark">' + ic('i-relic') + '</div>';
     el.querySelector('.spin').appendChild(pawnById(p.pawn).build(RING[i]));
     pw.appendChild(el);
   });
@@ -988,16 +1030,20 @@ const visType = n => (n.hidden ? 'unknown' : n.type);
 
 function renderTiles() {
   const reach = new Set(G.phase === 'idle' && cur().alive ? G.nodes[cur().pos].adj : []);
+  const peekSet = (G.phase === 'idle' && cur().pawn === 'scope' && !cur().cpu) ? reach : new Set();   // 망원경 패시브
+  const opp = G.players.length === 2 ? other() : null;
   document.querySelectorAll('.tile').forEach(el => {
-    const n = G.nodes[+el.dataset.id], vt = visType(n);
+    const n = G.nodes[+el.dataset.id], peek = n.hidden && peekSet.has(n.id), vt = peek ? n.type : visType(n);
+    const atk = !!(opp && opp.relic && opp.alive && reach.has(n.id) && opp.pos === n.id && n.id !== 0);
     el.className = 'tile k-' + vt
       + (n.used && n.id !== 0 ? ' used' : '')
       + (reach.has(n.id) ? ' reach' + (G.sel ? ' sel' : '') : '')
+      + (peek ? ' peek' : '') + (atk ? ' attack' : '')
       + (n.id === 0 && cur().relic ? ' goal' : '');
     el.querySelector('.face').innerHTML = ic('i-' + vt);
     const pips = el.querySelector('.pips');
     pips.innerHTML = (n.id === 0 || (n.used && !n.hidden)) ? '' : [0,1,2].map(i => `<i class="pip ${i < n.risk ? 'f' : ''}"></i>`).join('');
-    el.querySelector('.nm').textContent = n.id === 0 ? '캠프' : (n.used ? '지나옴' : TNAME[vt]);
+    el.querySelector('.nm').textContent = atk ? '공격!' : (n.id === 0 ? '캠프' : (peek ? '정찰: ' + TNAME[vt] : (n.used ? '지나옴' : TNAME[vt])));
     const tm = el.querySelector('.tm'), tr = G.traps.find(t => t.node === n.id && trapVisible(t));
     tm.classList.toggle('on', !!tr);
     if (tr) { tm.innerHTML = ic('i-trap'); tm.style.setProperty('--tc', RING[tr.owner]); }
@@ -1019,6 +1065,7 @@ function renderPawns(hop, idx) {
     el.style.zIndex = i === G.cur ? 7 : 6;
     el.classList.toggle('active', i === G.cur && G.phase !== 'over');
     el.style.opacity = p.alive ? 1 : .3;
+    el.querySelector('.rmark').classList.toggle('on', p.relic);
     if (hop && idx === i) { el.classList.remove('hop'); void el.offsetWidth; el.classList.add('hop'); }
   });
 }
@@ -1027,7 +1074,7 @@ function renderHUD() {
   $('#players').innerHTML = G.players.map((p, i) => `
     <div class="pp ${i === G.cur ? 'active' : ''} ${p.alive ? '' : 'dead'}">
       <div class="who"><span class="nm"><i class="tok" style="background:${RING[i]}"></i>${p.name}</span>
-        <span class="sb">${pawnById(p.pawn).name}</span><span class="turnmark">현재 차례</span></div>
+        <span class="sb" title="${pawnById(p.pawn).passive.name}: ${pawnById(p.pawn).passive.desc}">${pawnById(p.pawn).name} · ${pawnById(p.pawn).passive.short}</span><span class="turnmark">현재 차례</span></div>
       <div class="meters">
         <div class="meter hp">${ic('i-heart')}<div class="track"><i style="width:${p.hp / MAX_HP * 100}%"></i></div><b>${p.hp}/${MAX_HP}</b></div>
         <div class="meter fd">${ic('i-ration')}<div class="track"><i style="width:${p.food / MAX_FOOD * 100}%"></i></div><b>${p.food}/${MAX_FOOD}</b></div>
@@ -1049,8 +1096,15 @@ function trapAllowed(p, idx) { return p.food >= 1 && p.pos !== 0 && myTraps(idx)
 function trapVisible(t) { if (G.players[t.owner].cpu) return false; return G.cpu ? true : t.owner === G.cur; }
 function hurtPlayer(p, n) {
   let blocked = 0;
-  if (p.shield > 0) { blocked = Math.min(n, 3); n -= blocked; p.shield = 0; }
+  if (p.shield > 0) { blocked = Math.min(n, shieldPower(p)); n -= blocked; p.shield = 0; }
   n = Math.max(0, n); p.hp -= n; return { dmg:n, blocked };
+}
+let alertT = 0;
+function showAlert(big, sub, chip) {
+  const a = $('#alert');
+  a.innerHTML = `<div class="al-big">${big}</div><div class="al-sub">${sub}</div>` + (chip ? `<div class="al-chip">${chip}</div>` : '');
+  a.classList.remove('show'); void a.offsetWidth; a.classList.add('show');
+  clearTimeout(alertT); alertT = setTimeout(() => a.classList.remove('show'), 2300);
 }
 function shakeBoard() { const b = $('#board'); b.classList.remove('shake'); void b.offsetWidth; b.classList.add('shake'); }
 
@@ -1070,13 +1124,20 @@ function cardDisabled(k) {
   if (k === 'trap') return !trapAllowed(p, G.cur);
   return false;
 }
+function cardView(c) {
+  const p = cur();
+  if (c.k === 'gather') return { desc:c.desc, cost:`식량 +${gatherAmt(p)}` };
+  if (c.k === 'guard') return { desc:`다음 피해를 ${shieldPower(p)} 줄여준다`, cost:c.cost };
+  if (c.k === 'heal') return { desc:c.desc, cost:`체력 +${healAmt(p)} · 식량 -1` };
+  return { desc:c.desc, cost:c.cost };
+}
 function renderCards() {
-  $('#cards').innerHTML = CARDS.map((c, i) => `
+  $('#cards').innerHTML = CARDS.map((c, i) => { const v = cardView(c); return `
     <button class="card ${c.k === 'move' && G.sel ? 'sel' : ''} ${G.cpuCard === c.k ? 'cpu' : ''}" data-k="${c.k}" ${cardDisabled(c.k) ? 'disabled' : ''}>
       <span class="key">${i + 1}</span>
       <div class="med">${ic(c.icon)}</div>
-      <div class="tx"><h3>${c.name}</h3><p>${c.desc}</p><span class="cost">${c.cost}</span></div>
-    </button>`).join('');
+      <div class="tx"><h3>${c.name}</h3><p>${v.desc}</p><span class="cost">${v.cost}</span></div>
+    </button>`; }).join('');
   document.querySelectorAll('.card').forEach(b => b.addEventListener('click', () => useCard(b.dataset.k)));
 }
 
@@ -1101,20 +1162,20 @@ function useCard(k) {
   G.sel = false;
   if (k === 'gather') {
     Snd.sfx('rustle');
-    p.food = clamp(p.food + 2, 0, MAX_FOOD);
-    showBanner('숲을 뒤져 먹을 것을 모았다.', '<span class="pos">식량 +2</span>');
+    const ga = gatherAmt(p); p.food = clamp(p.food + ga, 0, MAX_FOOD);
+    showBanner('숲을 뒤져 먹을 것을 모았다.', `<span class="pos">식량 +${ga}</span>` + (ga > 2 ? ' <span class="pos">(배낭 효과)</span>' : ''));
   } else if (k === 'guard') {
     Snd.sfx('guard');
     p.shield = 1;
-    showBanner('방어 자세를 취했다. 다음 피해를 줄여 준다.', '<span class="pos">방어막 생성</span>');
+    showBanner(`방어 자세를 취했다. 다음 피해를 ${shieldPower(p)} 줄여 준다.`, '<span class="pos">방어막 생성</span>');
   } else if (k === 'trap') {
     Snd.sfx('seal');
     p.food -= 1; G.traps.push({ node:p.pos, owner:G.cur });
     showBanner('발밑에 보이지 않는 덫을 설치했다.', '<span class="neg">식량 -1</span> · <span class="pos">함정 ' + myTraps(G.cur) + '/' + MAX_TRAPS + '</span>');
   } else if (k === 'heal') {
     Snd.sfx('heal');
-    p.food -= 1; p.hp = clamp(p.hp + 3, 0, MAX_HP);
-    showBanner('상처에 약초를 바르고 숨을 골랐다.', '<span class="pos">체력 +3</span> · <span class="neg">식량 -1</span>');
+    const ha = healAmt(p); p.food -= 1; p.hp = clamp(p.hp + ha, 0, MAX_HP);
+    showBanner('상처에 약초를 바르고 숨을 골랐다.', `<span class="pos">체력 +${ha}</span> · <span class="neg">식량 -1</span>`);
   }
   endTurn();
 }
@@ -1154,26 +1215,38 @@ function arrive(p, node, notes) {
   }
   renderTiles(); renderHUD();
 
-  if (G.mode === 2 && node.id !== 0) {    // 유물 든 상대와 같은 타일 → 빼앗기
+  let stolen = false;
+  if (G.mode === 2 && node.id !== 0) {    // 유물 든 상대와 같은 타일 → 공격! 유물 강탈 + 피해 2
     const o = other();
     if (o.relic && o.pos === p.pos) {
-      o.relic = false; p.relic = true; Snd.sfx('steal');
-      showBanner(`${p.name}이(가) ${o.name}의 유물을 빼앗았다!`, '<span class="pos">유물 강탈!</span>');
-      renderHUD(); renderTiles();
+      o.relic = false; p.relic = true; stolen = true;
+      const r = hurtPlayer(o, 2);
+      Snd.sfx('steal'); setTimeout(() => Snd.sfx('hurt'), 220); shakeBoard();
+      showAlert('공격!', `${p.name}이(가) ${o.name}의 유물을 빼앗았다`, r.dmg ? `${o.name} 체력 -${r.dmg}` : `${o.name}의 방어막이 피해를 막았다`);
+      msg(`${p.name}이(가) 유물을 빼앗았다! 이제 캠프로 돌아가야 한다.`);
+      renderAll();
+      if (o.hp <= 0) {
+        o.hp = 0; o.alive = false; renderAll();
+        return finish(true, p, `${o.name}이(가) 공격을 받고 쓰러졌다. ${p.name}의 승리!`);
+      }
     }
   }
 
-  if (node.id === 0) {
-    if (p.relic) return finish(true, p, '유물을 품고 캠프로 무사히 귀환했다!');
-    Snd.sfx('camp');
-    if (p.hp < MAX_HP) { p.hp++; notes.push('<span class="pos">캠프 휴식 체력 +1</span>'); }
-    showBanner(trapMsg || '캠프의 모닥불 곁에서 숨을 돌렸다.', notes.join(' · '));
-    return endTurn();
-  }
-  if (node.type !== 'normal' && !node.used) { if (trapMsg) showBanner(trapMsg, notes.join(' · ')); return openEvent(node, notes); }
-
-  showBanner(trapMsg || (node.used ? '이미 지나간 길이다. 낙엽만 바스락거린다.' : pick(['고요한 숲길이다. 새소리만 들린다.', '이끼 낀 오솔길을 따라 걸었다.', '바람에 나뭇잎이 흩날린다. 아무 일도 없었다.'])), notes.join(' · '));
-  endTurn();
+  const g = G;
+  const settle = () => {
+    if (G !== g || G.phase === 'over') return;
+    if (node.id === 0) {
+      if (p.relic) return finish(true, p, '유물을 품고 캠프로 무사히 귀환했다!');
+      Snd.sfx('camp');
+      if (p.hp < MAX_HP) { p.hp++; notes.push('<span class="pos">캠프 휴식 체력 +1</span>'); }
+      showBanner(trapMsg || '캠프의 모닥불 곁에서 숨을 돌렸다.', notes.join(' · '));
+      return endTurn();
+    }
+    if (node.type !== 'normal' && !node.used) { if (trapMsg) showBanner(trapMsg, notes.join(' · ')); return openEvent(node, notes); }
+    showBanner(trapMsg || (node.used ? '이미 지나간 길이다. 낙엽만 바스락거린다.' : pick(['고요한 숲길이다. 새소리만 들린다.', '이끼 낀 오솔길을 따라 걸었다.', '바람에 나뭇잎이 흩날린다. 아무 일도 없었다.'])), notes.join(' · '));
+    endTurn();
+  };
+  if (stolen) setTimeout(settle, 1900); else settle();   // 강탈 연출이 끝난 뒤에 이어서 진행
 }
 
 /* 사건 모달 일러스트: 양피지 + 잉크 실루엣 + 엠블럼 */
@@ -1242,7 +1315,7 @@ function chooseOpt(i) {
   if (o.cost) p.food -= o.cost.food;
 
   const c = {
-    hurt(n) { if (p.shield > 0) { const a = Math.min(n, 3); n -= a; p.shield = 0; } p.hp -= Math.max(0, n); },
+    hurt(n) { if (p.shield > 0) { const a = Math.min(n, shieldPower(p)); n -= a; p.shield = 0; } p.hp -= Math.max(0, n); },
     food(n) { p.food = clamp(p.food + n, 0, MAX_FOOD); },
     heal(n) { p.hp = clamp(p.hp + n, 0, MAX_HP); },
     shield() { p.shield = 1; },
@@ -1297,6 +1370,11 @@ function endTurn() {
   renderAll();
   if (G.mode === 2) setTimeout(() => Snd.sfx('bell'), 420);
   msg(G.mode === 2 ? `${cur().name}의 차례입니다.` : (G.turn >= G.maxTurn - 3 ? '해가 저문다... 서둘러야 한다!' : '다음 행동을 고르세요.'));
+  if (G.mode === 2 && !cur().cpu) {
+    const holder = G.players.find(q => q.relic);
+    if (holder && holder === cur()) msg('유물을 들고 있다! 캠프로 돌아가세요. 상대가 같은 타일에 오면 빼앗깁니다.');
+    else if (holder) msg('상대가 유물을 들고 있다! 같은 타일로 이동하면 공격해서 빼앗을 수 있습니다.');
+  }
   const g = G;
   setTimeout(() => {
     if (G !== g || G.phase !== 'busy') return;
@@ -1386,7 +1464,7 @@ function cpuPickOpt(node, p) {          // 선택지를 40번씩 가상 실행�
     for (let k = 0; k < N; k++) {
       const s = { hp:p.hp, food:p.food - (o.cost ? o.cost.food : 0), shield:p.shield, relic:p.relic };
       o.run({
-        hurt(n) { if (s.shield > 0) { n -= Math.min(n, 3); s.shield = 0; } s.hp -= Math.max(0, n); },
+        hurt(n) { if (s.shield > 0) { n -= Math.min(n, shieldPower(p)); s.shield = 0; } s.hp -= Math.max(0, n); },
         food(n) { s.food = clamp(s.food + n, 0, MAX_FOOD); }, heal(n) { s.hp = clamp(s.hp + n, 0, MAX_HP); },
         shield() { s.shield = 1; }, relic() { s.relic = true; }, chance(x) { return Math.random() < x; }
       });
@@ -1426,7 +1504,7 @@ function renderPick() {
   PAWNS.forEach(def => {
     const taken = s.chosen.includes(def.id);
     const b = document.createElement('button'); b.className = 'pbtn'; b.disabled = taken;
-    b.innerHTML = `<div class="pvbox"></div><b>${def.name}</b><small>${def.desc}</small>`;
+    b.innerHTML = `<div class="pvbox"></div><b>${def.name}</b><small>${def.desc}</small><span class="pas"><b>${def.passive.name}</b> ${def.passive.desc}</span>`;
     b.querySelector('.pvbox').appendChild(pawnPreview(def, RING[who]));
     b.addEventListener('click', () => {
       s.chosen.push(def.id);
