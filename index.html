@@ -79,8 +79,12 @@ button:disabled{cursor:not-allowed}
 .turnbox.warn .n{color:#ff8a6a;animation:blink 1s infinite}
 .turnbox.warn .tb i{background:#e5563a}
 @keyframes blink{50%{opacity:.55}}
-#menuBtn{background:linear-gradient(#4a3722,#2a1d10);border:1px solid var(--brass2);border-radius:8px;padding:0 14px;font-size:13px;color:var(--parch)}
-#menuBtn:hover{filter:brightness(1.25)}
+.hudbtns{display:flex;gap:6px;align-items:stretch}
+#menuBtn,.snd{background:linear-gradient(#4a3722,#2a1d10);border:1px solid var(--brass2);border-radius:8px;padding:0 12px;font-size:12.5px;color:var(--parch);display:flex;align-items:center;gap:6px}
+#menuBtn:hover,.snd:hover{filter:brightness(1.25)}
+.snd .ic{font-size:16px;--wash:rgba(255,255,255,.12)}
+.snd.off{opacity:.5}.snd.off span{text-decoration:line-through}
+.buckle{width:9px;height:7px;margin:-3.5px 0 0 -4.5px;border:2px solid #e0b94c;border-radius:1px}
 
 /* ---------- Board (old map) ---------- */
 main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;padding:8px 0 4px}
@@ -281,6 +285,7 @@ main{flex:1;display:flex;flex-direction:column;align-items:center;justify-conten
 #result.lose .em{color:#c9604a;--wash:rgba(200,90,70,.2)}
 
 @media (max-width:760px){
+  .snd span{display:none}
   :root{--tile:calc(var(--bw) * .125);--bw:min(calc(100vw - 12px), calc((100dvh - 330px) * 1.6667))}
   #hud{flex-wrap:wrap}
   .brand{display:none}
@@ -343,6 +348,8 @@ main{flex:1;display:flex;flex-direction:column;align-items:center;justify-conten
     <path class="k" d="M7 41 C7 24 21 15 32 15 C43 15 57 24 57 41 C57 47 53 51 48 51 H16 C11 51 7 47 7 41 Z" style="stroke-width:0"/>
     <path d="M22 25 L27 40 M32 22 L37 38 M43 26 L46 40" style="stroke:#1d140c;stroke-width:4"/>
   </symbol>
+  <symbol id="i-music" viewBox="0 0 64 64"><path d="M27 46 V14 L52 9 V41"/><circle class="k" cx="20" cy="46" r="7"/><circle class="k" cx="45" cy="41" r="7"/></symbol>
+  <symbol id="i-sfx" viewBox="0 0 64 64"><path class="w" d="M8 24 H18 L32 12 V52 L18 40 H8 Z"/><path d="M42 22 C47 28 47 36 42 42 M49 15 C58 25 58 39 49 49"/></symbol>
   <symbol id="i-x" viewBox="0 0 64 64"><path d="M14 14 L50 50 M50 14 L14 50" style="stroke-width:7"/></symbol>
   <symbol id="i-rose" viewBox="-50 -50 100 100">
     <circle r="44"/><circle r="36" style="stroke-width:1.2"/>
@@ -401,7 +408,11 @@ main{flex:1;display:flex;flex-direction:column;align-items:center;justify-conten
   <div class="brand"><b>WILDERPATH</b><small>잊힌 숲</small></div>
   <div id="players"></div>
   <div class="turnbox" id="turnbox"><small>TURN</small><div class="n"><b id="turn">1</b><span> / <span id="maxturn">26</span></span></div><div class="tb"><i id="turnbar"></i></div></div>
-  <button id="menuBtn" title="메뉴 / 규칙">메뉴</button>
+  <div class="hudbtns">
+    <button class="snd" id="btnMusic" title="배경음악 (M)"><svg class="ic"><use href="#i-music"/></svg><span>음악</span></button>
+    <button class="snd" id="btnSfx" title="효과음"><svg class="ic"><use href="#i-sfx"/></svg><span>효과음</span></button>
+    <button id="menuBtn" title="메뉴 / 규칙">메뉴</button>
+  </div>
 </header>
 
 <main id="mainArea">
@@ -616,12 +627,80 @@ const THEME = {
 
 /* ---------- 말(3D) 종류 ---------- */
 const PAWNS = [
-  { id:'hat',     name:'탐험가 모자', desc:'깃털 달린 사파리 모자', build:makeHat },
+  { id:'hat',     name:'탐험가 모자', desc:'놋쇠 버클이 달린 가죽 모자', build:makeHat },
   { id:'scope',   name:'망원경',      desc:'놋쇠 마디의 접이식 망원경', build:makeScope },
   { id:'compass', name:'나침반',      desc:'바늘이 흔들리는 놋쇠 나침반', build:makeCompass },
   { id:'lantern', name:'랜턴',        desc:'불꽃이 타오르는 등불', build:makeLantern }
 ];
 const pawnById = id => PAWNS.find(p => p.id === id);
+
+
+/* ---------- 사운드 (배경음악 + 합성 효과음) ---------- */
+const Snd = (() => {
+  let ctx = null, master = null, bgm = null, nbuf = null;
+  const st = { music:true, sfx:true };
+  try { const v = JSON.parse(localStorage.getItem('wp_snd') || '{}'); if (v.music === false) st.music = false; if (v.sfx === false) st.sfx = false; } catch (e) {}
+  const save = () => { try { localStorage.setItem('wp_snd', JSON.stringify(st)); } catch (e) {} };
+  function init() {
+    if (ctx) return;
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (AC) {
+      ctx = new AC(); master = ctx.createGain(); master.gain.value = .9; master.connect(ctx.destination);
+      nbuf = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
+      const d = nbuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    }
+    bgm = new Audio('audio/bgm.mp3'); bgm.loop = true; bgm.volume = .32; bgm.preload = 'auto';
+  }
+  function applyMusic() { if (!bgm) return; if (st.music) bgm.play().catch(() => {}); else bgm.pause(); }
+  function unlock() { init(); if (ctx && ctx.state === 'suspended') ctx.resume(); applyMusic(); }
+  function tone(o) {
+    if (!ctx) return;
+    const t0 = ctx.currentTime + (o.delay || 0), d = o.d || .2, v = o.v == null ? .15 : o.v;
+    const osc = ctx.createOscillator(), g = ctx.createGain();
+    osc.type = o.type || 'sine'; osc.frequency.setValueAtTime(o.f, t0);
+    if (o.f2) osc.frequency.exponentialRampToValueAtTime(o.f2, t0 + d);
+    g.gain.setValueAtTime(.0001, t0); g.gain.linearRampToValueAtTime(v, t0 + (o.a || .006));
+    g.gain.exponentialRampToValueAtTime(.0001, t0 + d);
+    osc.connect(g); g.connect(master); osc.start(t0); osc.stop(t0 + d + .05);
+  }
+  function noise(o) {
+    if (!ctx) return;
+    const t0 = ctx.currentTime + (o.delay || 0), d = o.d || .2, v = o.v == null ? .15 : o.v;
+    const src = ctx.createBufferSource(); src.buffer = nbuf; src.loop = true;
+    const fl = ctx.createBiquadFilter(); fl.type = o.type || 'bandpass'; fl.Q.value = o.q || .8;
+    fl.frequency.setValueAtTime(o.f || 1000, t0); if (o.f2) fl.frequency.exponentialRampToValueAtTime(o.f2, t0 + d);
+    const g = ctx.createGain(); g.gain.setValueAtTime(.0001, t0); g.gain.linearRampToValueAtTime(v, t0 + (o.a || .01));
+    g.gain.exponentialRampToValueAtTime(.0001, t0 + d);
+    src.connect(fl); fl.connect(g); g.connect(master); src.start(t0, Math.random()); src.stop(t0 + d + .05);
+  }
+  const arp = (notes, gap, o) => notes.forEach((f, i) => tone({ f, delay: i * gap, ...o }));
+  const LIB = {
+    click:  () => { tone({ f:540, f2:380, d:.07, v:.12 }); noise({ f:2200, d:.04, v:.07 }); },
+    error:  () => tone({ f:190, f2:140, d:.14, type:'square', v:.06 }),
+    step:   () => { [0, .2].forEach(dl => { noise({ type:'lowpass', f:420, d:.09, v:.32, delay:dl }); tone({ f:95, f2:50, d:.09, v:.22, delay:dl }); }); },
+    rustle: () => { [0, .13, .27].forEach(dl => noise({ f:3600, f2:1600, q:.6, d:.16, v:.14, delay:dl })); },
+    guard:  () => { tone({ f:880, f2:430, d:.4, type:'triangle', v:.16 }); tone({ f:1320, d:.22, type:'square', v:.04 }); noise({ type:'highpass', f:4000, d:.05, v:.14 }); },
+    heal:   () => arp([523, 659, 784, 1047], .11, { d:.55, v:.11 }),
+    paper:  () => { noise({ f:1500, f2:3200, q:.5, d:.4, v:.13 }); arp([220, 330], .12, { d:.7, type:'triangle', v:.05 }); },
+    seal:   () => { tone({ f:150, f2:60, d:.2, v:.34 }); noise({ type:'lowpass', f:900, d:.09, v:.2 }); },
+    hurt:   () => { tone({ f:170, f2:55, d:.36, type:'sawtooth', v:.15 }); noise({ type:'lowpass', f:700, d:.26, v:.34 }); },
+    good:   () => arp([784, 1175], .09, { d:.55, v:.13 }),
+    relic:  () => { arp([523, 659, 784, 988, 1319, 1568], .085, { d:.9, v:.09 }); tone({ f:262, d:1.5, type:'triangle', v:.1 }); },
+    reveal: () => { noise({ type:'highpass', f:2500, f2:6000, d:.3, v:.09 }); tone({ f:660, f2:880, d:.22, v:.06 }); },
+    camp:   () => { arp([392, 523], .12, { d:.6, v:.08 }); [0, .15, .31].forEach(dl => noise({ type:'highpass', f:5000, d:.03, v:.08, delay:dl })); },
+    steal:  () => { tone({ f:230, f2:105, d:.55, type:'sawtooth', v:.13 }); tone({ f:243, f2:110, d:.55, type:'sawtooth', v:.1 }); },
+    bell:   () => { tone({ f:880, d:.7, v:.09 }); tone({ f:1760, d:.5, v:.035 }); },
+    win:    () => { arp([392, 494, 587, 784], .15, { d:.5, type:'triangle', v:.16 }); [523, 659, 784].forEach(f => tone({ f, delay:.65, d:1.6, type:'triangle', v:.1 })); },
+    lose:   () => { arp([330, 311, 262, 196], .26, { d:.6, type:'triangle', v:.14 }); tone({ f:98, d:1.4, delay:.3, v:.16 }); }
+  };
+  return {
+    unlock, st,
+    sfx(n) { if (!st.sfx) return; if (!ctx) init(); if (ctx && ctx.state === 'suspended') ctx.resume(); if (LIB[n]) LIB[n](); },
+    toggleMusic() { st.music = !st.music; save(); init(); applyMusic(); this.sync(); },
+    toggleSfx() { st.sfx = !st.sfx; save(); this.sync(); if (st.sfx) this.sfx('click'); },
+    sync() { $('#btnMusic').classList.toggle('off', !st.music); $('#btnSfx').classList.toggle('off', !st.sfx); }
+  };
+})();
 
 /* ---------- 상태 ---------- */
 let G = null;
@@ -764,13 +843,14 @@ function plane(html, cls, x, y, z, ry) {
 function wrap(transform) { const d = document.createElement('div'); d.className = 'solid'; d.style.transform = transform; return d; }
 const base = ring => [[0, 24, ring], [3, 24, ring]];
 
-function makeHat(ring) {            // 탐험가 모자
+function makeHat(ring) {            // 탐험가 모자 (가죽 페도라)
   const root = wrap('');
   root.appendChild(lathe([...base(ring),
-    [3.4, 22, '#c4a066'], [6, 26.5, '#c9a76c'], [7, 26.5, '#b8955a'], [7.4, 15, '#b8935a'], [12, 15, '#b8935a'],
-    [12.4, 15.7, '#4e3219'], [16, 15.7, '#4e3219'], [16.4, 14.8, '#b8935a'], [22, 13.8, '#b8935a'], [28, 10, '#c19a5c'], [31, 5, '#c9a56a']]));
-  const f1 = plane('', 'feather', 0, 14, 16, 0); f1.style.transform += ' rotateZ(-16deg)'; root.appendChild(f1);
-  const f2 = plane('', 'feather', 0, 14, -16, 180); f2.style.transform += ' rotateZ(-16deg)'; root.appendChild(f2);
+    [3.4, 21, '#4e341c'], [5.5, 25.5, '#5e4129'], [7, 25, '#5e4129'], [7.6, 14.6, '#6f4f30'],
+    [11, 14.8, '#6f4f30'], [11.4, 15.6, '#24170c'], [15.5, 15.6, '#24170c'], [15.9, 14.8, '#6f4f30'],
+    [26, 13.2, '#7a5835'], [32, 12, '#83603a'], [33, 10.5, '#6f4f30']]));
+  root.appendChild(disc(7.2, 32.6, '#3f2a15', false));        // 정수리 눌림
+  [[16.3, 0], [-16.3, 180]].forEach(([z, ry]) => root.appendChild(plane('', 'buckle', 0, 13.2, z, ry)));
   return root;
 }
 function tube(r, y0, y1, color, n) {   // 옆면을 면으로 둘러 세운 원통 (비스듬히 봐도 속이 차 보임)
@@ -917,15 +997,18 @@ function useCard(k) {
   if (!G || G.phase !== 'idle') return;
   const p = cur();
   if (cardDisabled(k)) return;
-  if (k === 'move') { G.sel = !G.sel; renderTiles(); renderCards(); msg(G.sel ? '이동할 타일을 선택하세요. (빛나는 타일)' : '이동을 취소했습니다.'); return; }
+  if (k === 'move') { Snd.sfx('click'); G.sel = !G.sel; renderTiles(); renderCards(); msg(G.sel ? '이동할 타일을 선택하세요. (빛나는 타일)' : '이동을 취소했습니다.'); return; }
   G.sel = false;
   if (k === 'gather') {
+    Snd.sfx('rustle');
     p.food = clamp(p.food + 2, 0, MAX_FOOD);
     showBanner('숲을 뒤져 먹을 것을 모았다.', '<span class="pos">식량 +2</span>');
   } else if (k === 'guard') {
+    Snd.sfx('guard');
     p.shield = 1;
     showBanner('방어 자세를 취했다. 다음 피해를 줄여 준다.', '<span class="pos">방어막 생성</span>');
   } else if (k === 'heal') {
+    Snd.sfx('heal');
     p.food -= 1; p.hp = clamp(p.hp + 3, 0, MAX_HP);
     showBanner('상처에 약초를 바르고 숨을 골랐다.', '<span class="pos">체력 +3</span> · <span class="neg">식량 -1</span>');
   }
@@ -934,12 +1017,13 @@ function useCard(k) {
 
 function onTile(id) {
   if (!G || G.phase !== 'idle' || !cur().alive) return;
-  if (!G.nodes[cur().pos].adj.includes(id)) { msg('인접한 타일로만 이동할 수 있습니다.'); return; }
+  if (!G.nodes[cur().pos].adj.includes(id)) { Snd.sfx('error'); msg('인접한 타일로만 이동할 수 있습니다.'); return; }
   doMove(id);
 }
 
 function doMove(id) {
   const p = cur(); G.sel = false; G.phase = 'busy';
+  Snd.sfx('step');
   const notes = [];
   if (p.food > 0) { p.food--; notes.push('<span class="neg">식량 -1</span>'); }
   else { p.hp--; notes.push('<span class="neg">굶주림 체력 -1</span>'); }
@@ -951,13 +1035,14 @@ function doMove(id) {
 
 function arrive(p, node, notes) {
   if (checkDeath(p)) return;
+  if (node.hidden) Snd.sfx('reveal');
   node.hidden = false;
   renderTiles(); renderHUD();
 
   if (G.mode === 2 && node.id !== 0) {    // 유물 든 상대와 같은 타일 → 빼앗기
     const o = other();
     if (o.relic && o.pos === p.pos) {
-      o.relic = false; p.relic = true;
+      o.relic = false; p.relic = true; Snd.sfx('steal');
       showBanner(`${p.name}이(가) ${o.name}의 유물을 빼앗았다!`, '<span class="pos">유물 강탈!</span>');
       renderHUD(); renderTiles();
     }
@@ -965,6 +1050,7 @@ function arrive(p, node, notes) {
 
   if (node.id === 0) {
     if (p.relic) return finish(true, p, '유물을 품고 캠프로 무사히 귀환했다!');
+    Snd.sfx('camp');
     if (p.hp < MAX_HP) { p.hp++; notes.push('<span class="pos">캠프 휴식 체력 +1</span>'); }
     showBanner('캠프의 모닥불 곁에서 숨을 돌렸다.', notes.join(' · '));
     return endTurn();
@@ -1001,6 +1087,7 @@ function openEvent(node, notes) {
   if (!node.ev) node.ev = pick(EVENTS[node.type]);
   const ev = node.ev;
   G.phase = 'modal'; G.curNode = node; G.pendingNotes = notes || [];
+  Snd.sfx('paper');
   $('#martArea').innerHTML = sceneSVG(ev);
   $('#mkick').textContent = THEME[ev.theme].kick;
   $('#mtitle').textContent = ev.title;
@@ -1057,6 +1144,8 @@ function chooseOpt(i) {
 
   closeModal();
   G.phase = 'busy';
+  Snd.sfx('seal');
+  setTimeout(() => Snd.sfx(p.relic && !before.relic ? 'relic' : dh < 0 ? 'hurt' : (dh > 0 || df > 0 ? 'good' : 'click')), 160);
   showBanner(text + (p.relic && !before.relic ? ' 이제 캠프로 돌아가야 한다!' : ''), all);
   renderAll();
   if (p.relic && !before.relic) msg('유물을 얻었다! 빛나는 캠프 타일로 돌아가세요.');
@@ -1067,7 +1156,7 @@ function skipEvent() {
   if (G.phase !== 'modal') return;
   const node = G.curNode;
   if (node.ev.required && node.type !== 'relic') return;
-  closeModal(); G.phase = 'busy';
+  closeModal(); G.phase = 'busy'; Snd.sfx('click');
   showBanner(node.type === 'relic' ? '유물을 두고 물러났다. 아직 여기 있을 것이다.' : '그냥 지나쳤다.', G.pendingNotes.join(' · '));
   endTurn();
 }
@@ -1086,6 +1175,7 @@ function endTurn() {
   else { G.cur = 1 - G.cur; if (G.cur === 0) G.turn++; }
   if (G.turn > G.maxTurn) { return timeUp(); }
   renderAll();
+  if (G.mode === 2) setTimeout(() => Snd.sfx('bell'), 420);
   msg(G.mode === 2 ? `${cur().name}의 차례입니다.` : (G.turn >= G.maxTurn - 3 ? '해가 저문다... 서둘러야 한다!' : '다음 행동을 고르세요.'));
   setTimeout(() => { if (G.phase === 'busy') { G.phase = 'idle'; renderAll(); } }, 500);
 }
@@ -1103,6 +1193,7 @@ function timeUp() {
 function finish(win, p, text) {
   G.phase = 'over'; G.sel = false;
   renderAll();
+  setTimeout(() => Snd.sfx(win ? 'win' : 'lose'), 350);
   const r = $('#result');
   r.className = 'backdrop ' + (win ? 'win' : 'lose');
   $('#rem').innerHTML = `<use href="#${win ? 'i-relic' : 'i-danger'}"/>`;
@@ -1150,6 +1241,10 @@ function startMode(m, pawns) {
 
 /* ---------- 입력 ---------- */
 $('#mclose').addEventListener('click', skipEvent);
+$('#btnMusic').addEventListener('click', () => Snd.toggleMusic());
+$('#btnSfx').addEventListener('click', () => Snd.toggleSfx());
+document.addEventListener('pointerdown', () => Snd.unlock());
+document.addEventListener('click', e => { if (e.target.closest('.bigbtn,.pbtn,#menuBtn')) Snd.sfx('click'); }, true);
 $('#btn1').addEventListener('click', () => openPick(1));
 $('#btn2').addEventListener('click', () => openPick(2));
 $('#pickBack').addEventListener('click', () => { $('#pick').classList.add('hidden'); $('#menu').classList.remove('hidden'); });
@@ -1169,11 +1264,13 @@ document.addEventListener('keydown', e => {
     else if (e.key === 'Escape') skipEvent();
     return;
   }
+  if (e.key === 'm' || e.key === 'M') { Snd.toggleMusic(); return; }
   const idx = '1234'.indexOf(e.key);
   if (idx >= 0) useCard(CARDS[idx].k);
 });
 
 /* ---------- 시작 ---------- */
+Snd.sync();
 newGame(1, ['hat']);
 </script>
 </body>
