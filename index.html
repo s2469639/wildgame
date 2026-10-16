@@ -289,6 +289,34 @@ main{flex:1;display:flex;flex-direction:column;align-items:center;justify-conten
 
 
 
+
+/* ---------- 승리 연출 ---------- */
+.emwrap{position:relative;display:flex;justify-content:center}
+.rorn,.rstats{display:none}
+#result.win .emwrap{height:132px;align-items:center}
+#result.win .em{font-size:104px;margin:0;position:relative;z-index:1;animation:gemp 1.8s ease-in-out infinite;filter:drop-shadow(0 0 16px #f0c85a)}
+@keyframes gemp{50%{transform:scale(1.08);filter:drop-shadow(0 0 28px #ffe08a)}}
+#result.win .emwrap::before{content:"";position:absolute;left:50%;top:50%;width:460px;height:460px;margin:-230px 0 0 -230px;opacity:.75;pointer-events:none;
+  background:conic-gradient(transparent 0 4%,rgba(255,215,110,.55) 7%,transparent 11% 21%,rgba(255,215,110,.55) 24%,transparent 28% 38%,rgba(255,215,110,.55) 41%,transparent 45% 55%,rgba(255,215,110,.55) 58%,transparent 62% 72%,rgba(255,215,110,.55) 75%,transparent 79% 89%,rgba(255,215,110,.55) 92%,transparent 96%);
+  -webkit-mask:radial-gradient(circle,#000 8%,transparent 66%);mask:radial-gradient(circle,#000 8%,transparent 66%);animation:rayspin 16s linear infinite}
+@keyframes rayspin{to{transform:rotate(360deg)}}
+#result.win .sheet{animation:pop .35s cubic-bezier(.2,1.3,.4,1),winglow 2.6s ease-in-out .4s infinite;overflow:visible}
+@keyframes winglow{50%{box-shadow:0 0 0 2px #f0c85a,0 0 0 6px #0c0804,0 24px 60px #000,0 0 70px #f0c85acc,inset 0 0 60px rgba(0,0,0,.6)}}
+#result.win h1{font-size:60px;letter-spacing:.14em;padding-left:.14em;color:transparent;text-shadow:none;-webkit-text-fill-color:transparent;
+  background:linear-gradient(100deg,#a8740c 20%,#fff2b0 40%,#ffd34d 50%,#fff2b0 60%,#a8740c 80%) 0 0/220% 100%;-webkit-background-clip:text;background-clip:text;
+  filter:drop-shadow(0 3px 0 #2a1a04) drop-shadow(0 0 16px #f0c85a88);animation:shine 2.6s linear infinite}
+@keyframes shine{to{background-position:-220% 0}}
+#result.win .rorn{display:flex;align-items:center;gap:8px;width:70%;margin:0 auto 4px;color:var(--brass)}
+#result.win .rorn::before,#result.win .rorn::after{content:"";flex:1;height:1.5px;background:linear-gradient(90deg,transparent,var(--brass))}
+#result.win .rorn::after{transform:scaleX(-1)}
+#result.win .rorn i{width:9px;height:9px;transform:rotate(45deg);background:var(--brass)}
+#result.win .rstats{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:0 0 16px}
+.rstat{padding:5px 13px;border:1px solid #c79a3b99;border-radius:14px;background:#0006;font-size:13px;color:var(--parch2)}
+.rstat b{color:#ffd77a}
+#confetti{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:2}
+#confetti i{position:absolute;top:-24px;display:block;opacity:0;animation:cfall linear forwards}
+@keyframes cfall{0%{opacity:1;transform:translateY(0) rotate(0) rotateY(0)}100%{opacity:.9;transform:translateY(110vh) rotate(720deg) rotateY(540deg)}}
+
 /* ---------- 시작 연출: 유물 위치 ---------- */
 #intro{display:none;position:absolute;inset:0;z-index:28;cursor:pointer}
 #intro.on{display:block;animation:introa 3.3s ease forwards}
@@ -630,10 +658,13 @@ kbd{display:inline-block;min-width:22px;padding:1px 6px;border:1px solid #c79a3b
 
 <!-- 결과 화면 -->
 <div id="result" class="backdrop hidden">
+  <div id="confetti"></div>
   <div class="sheet dark"><div class="mbd">
-    <svg class="ic em" id="rem"><use href="#i-relic"/></svg>
+    <div class="emwrap"><svg class="ic em" id="rem"><use href="#i-relic"/></svg></div>
     <h1 id="rtitle"></h1>
+    <div class="rorn"><i></i></div>
     <p id="rtext"></p>
+    <div class="rstats" id="rstats"></div>
     <button class="bigbtn" id="again">다시하기</button>
     <button class="bigbtn alt" id="toMenu">메뉴로</button>
   </div></div>
@@ -810,7 +841,8 @@ const Snd = (() => {
     if (o.f2) osc.frequency.exponentialRampToValueAtTime(o.f2, t0 + d);
     g.gain.setValueAtTime(.0001, t0); g.gain.linearRampToValueAtTime(v, t0 + (o.a || .006));
     g.gain.exponentialRampToValueAtTime(.0001, t0 + d);
-    osc.connect(g); g.connect(master); osc.start(t0); osc.stop(t0 + d + .05);
+    if (o.lp) { const f = ctx.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = o.lp; osc.connect(f); f.connect(g); } else osc.connect(g);
+    g.connect(master); osc.start(t0); osc.stop(t0 + d + .05);
   }
   function noise(o) {
     if (!ctx) return;
@@ -840,11 +872,18 @@ const Snd = (() => {
     steal:  () => { tone({ f:230, f2:105, d:.55, type:'sawtooth', v:.13 }); tone({ f:243, f2:110, d:.55, type:'sawtooth', v:.1 }); },
     trap:   () => { noise({ type:'highpass', f:3200, d:.09, v:.3 }); tone({ f:720, f2:190, d:.26, type:'square', v:.12 }); tone({ f:90, d:.3, v:.26 }); },
     bell:   () => { tone({ f:880, d:.7, v:.09 }); tone({ f:1760, d:.5, v:.035 }); },
-    win:    () => { arp([392, 494, 587, 784], .15, { d:.5, type:'triangle', v:.16 }); [523, 659, 784].forEach(f => tone({ f, delay:.65, d:1.6, type:'triangle', v:.1 })); },
+    win:    () => {
+      [0, .78].forEach(dl => { tone({ f:96, f2:44, d:.5, v:.34, delay:dl }); noise({ type:'lowpass', f:500, d:.2, v:.2, delay:dl }); });   // 북
+      [261.6, 329.6, 392, 523.3].forEach((f, i) => tone({ f, delay:i * .15, d:.4, type:'sawtooth', lp:2200, v:.085, a:.02 }));                   // 상승 나팔
+      [523.3, 659.3, 784, 1046.5].forEach(f => { tone({ f, delay:.78, d:2.4, type:'sawtooth', lp:2600, v:.06, a:.04 }); tone({ f, delay:.78, d:2.4, type:'triangle', v:.06, a:.04 }); });  // 마지막 화음
+      tone({ f:130.8, delay:.78, d:2.4, v:.18 }); tone({ f:1568, delay:.9, d:1.8, v:.05 });                                                   // 저음 + 종
+      [2093, 2637, 3136, 3951].forEach((f, i) => tone({ f, delay:1.0 + i * .12, d:.7, v:.035 }));                                              // 반짝임
+    },
     lose:   () => { arp([330, 311, 262, 196], .26, { d:.6, type:'triangle', v:.14 }); tone({ f:98, d:1.4, delay:.3, v:.16 }); }
   };
   return {
     unlock, st,
+    duck(ms) { if (!bgm) return; bgm.volume = .1; setTimeout(() => { bgm.volume = .32; }, ms); },
     sfx(n) { if (!st.sfx) return; if (!ctx) init(); if (ctx && ctx.state === 'suspended') ctx.resume(); if (LIB[n]) LIB[n](); },
     toggleMusic() { st.music = !st.music; save(); init(); applyMusic(); this.sync(); },
     toggleSfx() { st.sfx = !st.sfx; save(); this.sync(); if (st.sfx) this.sfx('click'); },
@@ -865,7 +904,7 @@ function newGame(mode, pawns, cpu) {
   nodes[relicNode].type = 'relic';
 
   const pool = shuffle([
-    ...Array(4).fill('danger'), ...Array(3).fill('food'), ...Array(3).fill('reward'), ...Array(6).fill('normal')
+    ...Array(5).fill('danger'), ...Array(3).fill('food'), ...Array(3).fill('reward'), ...Array(5).fill('normal')
   ]);
   const rest = nodes.filter(n => n.id !== 0 && n.id !== relicNode).map(n => n.id);
   rest.filter(i => nodes[0].adj.includes(i)).forEach(i => {   // 캠프 옆엔 위험 타일 없음
@@ -880,9 +919,10 @@ function newGame(mode, pawns, cpu) {
     n.hidden = n.id !== 0 && n.type !== 'relic' && Math.random() < .55;
   });
 
-  const mk = i => ({ name: cpu ? (i ? '컴퓨터' : '플레이어') : `플레이어 ${i + 1}`, cpu: !!(cpu && i === 1), pawn:pawns[i], hp:MAX_HP, food:6, relic:false, shield: pawns[i] === 'compass' ? 1 : 0, pos:0, alive:true });
-  G = { mode, cpu: !!cpu, cpuCard:null, traps:[], pawns, nodes, relicNode, players: mode === 2 ? [mk(0), mk(1)] : [mk(0)],
-        cur:0, turn:1, maxTurn:MAX_TURN, phase:'idle', sel:false, curNode:null };
+  const mk = i => ({ name: cpu ? (i ? '컴퓨터' : '플레이어') : `플레이어 ${i + 1}`, cpu: !!(cpu && i === 1), pawn:pawns[i], hp:MAX_HP, food:5, relic:false, shield: pawns[i] === 'compass' ? 1 : 0, pos:0, alive:true });
+  const first = mode === 2 ? rnd(2) : 0;
+  G = { mode, first, cpu: !!cpu, cpuCard:null, traps:[], pawns, nodes, relicNode, players: mode === 2 ? [mk(0), mk(1)] : [mk(0)],
+        cur:first, turn:1, maxTurn:MAX_TURN, phase:'idle', sel:false, curNode:null };
   $('#maxturn').textContent = MAX_TURN;
   buildBoard(); renderAll();
   msg(`${cur().name}의 차례입니다. 카드를 한 장 고르세요.`);
@@ -1218,7 +1258,7 @@ function doMove(id) {
   Snd.sfx('step');
   const notes = [];
   if (p.food > 0) { p.food--; notes.push('<span class="neg">식량 -1</span>'); }
-  else { p.hp--; notes.push('<span class="neg">굶주림 체력 -1</span>'); }
+  else { p.hp -= 2; notes.push('<span class="neg">굶주림 체력 -2</span>'); }
   p.pos = id;
   renderTiles(); renderCards(); renderHUD(); renderPawns(true, G.cur);
   hideBanner();
@@ -1398,7 +1438,7 @@ function checkDeath(p) {
 function endTurn() {
   G.phase = 'busy'; G.sel = false;
   if (G.mode === 1) G.turn++;
-  else { G.cur = 1 - G.cur; if (G.cur === 0) G.turn++; }
+  else { G.cur = 1 - G.cur; if (G.cur === G.first) G.turn++; }
   if (G.turn > G.maxTurn) { return timeUp(); }
   renderAll();
   if (G.mode === 2) setTimeout(() => Snd.sfx('bell'), 420);
@@ -1422,7 +1462,7 @@ function timeUp() {
   let w, why;
   if (a.relic !== b.relic) { w = a.relic ? a : b; why = '제한 턴 종료. 유물을 가진 쪽이 승리합니다.'; }
   else if (a.hp + a.food !== b.hp + b.food) { w = a.hp + a.food > b.hp + b.food ? a : b; why = '제한 턴 종료. 체력+식량이 더 많은 쪽이 승리합니다.'; }
-  else { w = b; why = '제한 턴 종료. 모든 조건이 같아 후공 플레이어가 승리합니다.'; }
+  else { w = G.players[1 - G.first]; why = '제한 턴 종료. 모든 조건이 같아 후공 플레이어가 승리합니다.'; }
   finish(true, w, why);
 }
 
@@ -1430,12 +1470,19 @@ function finish(win, p, text) {
   if (G.cpu) { win = !p.cpu; if (p.cpu) text = '컴퓨터의 승리 — ' + text; }
   G.phase = 'over'; G.sel = false;
   renderAll();
-  setTimeout(() => Snd.sfx(win ? 'win' : 'lose'), 350);
+  setTimeout(() => { Snd.sfx(win ? 'win' : 'lose'); if (win) Snd.duck(4200); }, 450);
   const r = $('#result');
   r.className = 'backdrop ' + (win ? 'win' : 'lose');
   $('#rem').innerHTML = `<use href="#${win ? 'i-relic' : 'i-danger'}"/>`;
   $('#rtitle').textContent = (G.cpu || G.mode === 1) ? (win ? '승리!' : '패배') : `${p.name} 승리!`;
   $('#rtext').textContent = text + ` (${Math.min(G.turn, G.maxTurn)}턴)`;
+  $('#confetti').innerHTML = ''; $('#rstats').innerHTML = '';
+  if (win) {
+    $('#rstats').innerHTML = `<span class="rstat">말 <b>${pawnById(p.pawn).name}</b></span><span class="rstat">걸린 턴 <b>${Math.min(G.turn, G.maxTurn)}/${G.maxTurn}</b></span><span class="rstat">체력 <b>${p.hp}/${MAX_HP}</b></span><span class="rstat">식량 <b>${p.food}/${MAX_FOOD}</b></span>`;
+    const cols = ['#ffd34d', '#fff2b0', '#f0a030', '#e5483a', '#7fd1ff', '#b79bff'];
+    let h = ''; for (let i = 0; i < 70; i++) h += `<i style="left:${rnd(100)}%;width:${6 + rnd(6)}px;height:${10 + rnd(10)}px;background:${pick(cols)};animation-duration:${2.6 + Math.random() * 2.6}s;animation-delay:${(.7 + Math.random() * 2.4).toFixed(2)}s"></i>`;
+    $('#confetti').innerHTML = h;
+  }
   setTimeout(() => r.classList.remove('hidden'), 700);
 }
 
@@ -1484,7 +1531,7 @@ function cpuDecide() {
   if (slack > 3 && p.hp <= 6 && p.food >= 3 && canHeal && Math.random() < .5) return { k:'heal' };
   if (!p.relic && slack > 3 && p.food >= 3 && trapAllowed(p, G.cur)) {   // 상대가 지나갈 길목이면 함정을 놓는다
     const route0 = hopPath(o.pos, o.relic ? 0 : G.relicNode), at = route0.indexOf(p.pos);
-    if (at > 0 && at <= 4 && Math.random() < .6) return { k:'trap' };
+    if (at > 0 && at <= 4 && Math.random() < .72) return { k:'trap' };
   }
   if (step != null) return { k:'move', to:step };
   return { k:'move', to:G.nodes[p.pos].adj[0] };
@@ -1549,7 +1596,10 @@ function introRelic() {            // 게임 시작 시 유물 위치를 연출�
   const end = () => {
     if (G !== g || G.phase !== 'intro') return;
     el.classList.remove('on'); el.innerHTML = '';
-    G.phase = 'idle'; renderAll(); msg(`${cur().name}의 차례입니다. 카드를 한 장 고르세요.`);
+    const who = G.mode === 2 ? `선공은 ${cur().name}!` : '';
+    if (who) showBanner(who, '순서는 매 판 무작위로 정해집니다');
+    if (cur().cpu) { G.phase = 'cpu'; renderAll(); msg('컴퓨터가 먼저 시작합니다...'); setTimeout(cpuTurn, 1200); }
+    else { G.phase = 'idle'; renderAll(); msg(`${cur().name}의 차례입니다. 카드를 한 장 고르세요.`); }
   };
   el.onclick = end;
   setTimeout(end, 3300);
@@ -1610,8 +1660,8 @@ $('#btnHow').addEventListener('click', () => { $('#menu').classList.add('hidden'
 function closeHow() { $('#howto').classList.add('hidden'); $('#menu').classList.remove('hidden'); }
 $('#howClose').addEventListener('click', closeHow);
 $('#btnResume').addEventListener('click', () => $('#menu').classList.add('hidden'));
-$('#again').addEventListener('click', () => { $('#result').classList.add('hidden'); startMode(G.mode, G.pawns, G.cpu); });
-$('#toMenu').addEventListener('click', () => { $('#result').classList.add('hidden'); $('#btnResume').style.display = 'none'; $('#menu').classList.remove('hidden'); });
+$('#again').addEventListener('click', () => { $('#result').classList.add('hidden'); $('#confetti').innerHTML = ''; startMode(G.mode, G.pawns, G.cpu); });
+$('#toMenu').addEventListener('click', () => { $('#result').classList.add('hidden'); $('#confetti').innerHTML = ''; $('#btnResume').style.display = 'none'; $('#menu').classList.remove('hidden'); });
 $('#menuBtn').addEventListener('click', () => {
   if (G.phase === 'modal') return;
   $('#btnResume').style.display = G.phase === 'over' ? 'none' : '';
