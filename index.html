@@ -1522,18 +1522,28 @@ function cpuTurn() {
 }
 
 
+const INTRO_LINES = [
+  ['저기서 유물이 부르고 있다', '저 빛을 따라가세요'],
+  ['저기다! 유물의 기운이 느껴진다', '먼저 잡는 쪽이 이긴다'],
+  ['잊힌 숲이 숨겨둔 보물', '누구보다 먼저 손에 넣어라'],
+  ['보물은 저 너머에 있다', '길은 험하고 시간은 없다'],
+  ['전설의 유물이 깨어났다', '캠프까지 무사히 가져오세요'],
+  ['저기에 있다… 놓치지 마라', '상대보다 먼저!'],
+  ['숲 깊은 곳에서 빛이 새어 나온다', '발걸음을 서둘러라'],
+  ['유물이 당신을 기다린다', '다른 누군가도 노리고 있다']
+];
 function introRelic() {            // 게임 시작 시 유물 위치를 연출로 알려준다
   const g = G, rn = G.nodes[G.relicNode], el = $('#intro');
   G.phase = 'intro'; renderAll();
   const pts = hopPath(0, G.relicNode).map(i => G.nodes[i].x + ',' + G.nodes[i].y).join(' ');
-  const below = rn.y < 200;
+  const below = rn.y < 200, line = pick(INTRO_LINES);
   el.style.setProperty('--rx', (rn.x / 10) + '%'); el.style.setProperty('--ry', (rn.y / 6) + '%');
   el.innerHTML = `<div class="dim"></div><svg viewBox="0 0 1000 600" preserveAspectRatio="none"><polyline class="route" pathLength="1" points="${pts}"/></svg>
     <i class="ping" style="animation-delay:1.7s"></i><i class="ping" style="animation-delay:2.05s"></i><i class="ping" style="animation-delay:2.4s"></i>
-    <div class="ilabel" style="top:calc(${rn.y / 6}% ${below ? '+' : '-'} var(--tile) * .75);transform:translate(-50%,${below ? '0' : '-100%'})">유물은 이곳에 잠들어 있다<small>먼저 찾아 캠프로 돌아오세요</small></div>
+    <div class="ilabel" style="top:calc(${rn.y / 6}% ${below ? '+' : '-'} var(--tile) * .75);transform:translate(-50%,${below ? '0' : '-100%'})">${line[0]}<small>${line[1]}</small></div>
     <span class="skip">눌러서 건너뛰기</span>`;
   el.classList.remove('on'); void el.offsetWidth; el.classList.add('on');
-  msg('유물이 잠든 곳을 확인하세요...');
+  msg('유물의 위치가 드러납니다...');
   setTimeout(() => { if (G === g && G.phase === 'intro') Snd.sfx('reveal'); }, 350);
   setTimeout(() => { if (G === g && G.phase === 'intro') Snd.sfx('relic'); }, 1700);
   const end = () => {
