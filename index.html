@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>WILDERPATH — 잊힌 숲</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M6 14 L22 9 L42 15 L58 10 V50 L42 55 L22 49 L6 54 Z' fill='%23e8d5a0' stroke='%233a2412' stroke-width='3' stroke-linejoin='round'/%3E%3Cpath d='M22 9 V49 M42 15 V55' stroke='%233a2412' stroke-width='2' opacity='.55'/%3E%3Cpath d='M12 42 C20 30 28 44 34 32 S46 26 50 20' fill='none' stroke='%238a3a22' stroke-width='3' stroke-dasharray='1 5' stroke-linecap='round'/%3E%3Cpath d='M46 14 L54 24 M54 14 L46 24' stroke='%23c0301c' stroke-width='4' stroke-linecap='round'/%3E%3Ccircle cx='12' cy='42' r='3.5' fill='%233a2412'/%3E%3C/svg%3E">
 <style>
 :root{
   --ink:#2e2010; --ink2:#4a3418; --brass:#c79a3b; --brass2:#8a6420; --leather:#1d140c; --leather2:#2c1f12;
@@ -287,6 +288,26 @@ main{flex:1;display:flex;flex-direction:column;align-items:center;justify-conten
 
 
 
+
+/* ---------- 시작 연출: 유물 위치 ---------- */
+#intro{display:none;position:absolute;inset:0;z-index:28;cursor:pointer}
+#intro.on{display:block;animation:introa 3.3s ease forwards}
+@keyframes introa{0%{opacity:0}10%{opacity:1}84%{opacity:1}100%{opacity:0}}
+#intro .dim{position:absolute;inset:0;background:radial-gradient(circle at var(--rx) var(--ry),rgba(0,0,0,0) 0,rgba(0,0,0,0) 6%,rgba(10,5,0,.8) 17%)}
+#intro svg{position:absolute;inset:0;width:100%;height:100%}
+#intro .route{fill:none;stroke:#d6c8ff;stroke-width:6;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1;stroke-dashoffset:1;
+  filter:drop-shadow(0 0 7px #a98bff);animation:draw 1.5s .35s ease-in-out forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+#intro .ping{position:absolute;left:var(--rx);top:var(--ry);width:calc(var(--tile)*1.1);height:calc(var(--tile)*1.1);border-radius:50%;
+  border:4px solid #d6c8ff;box-shadow:0 0 14px #a98bff;opacity:0;transform:translate(-50%,-50%) scale(.3);animation:pingk 1.1s ease-out 3 both}
+@keyframes pingk{0%{transform:translate(-50%,-50%) scale(.3);opacity:.95}100%{transform:translate(-50%,-50%) scale(2.9);opacity:0}}
+#intro .ilabel{position:absolute;left:var(--rx);padding:7px 18px;text-align:center;font-weight:800;font-size:clamp(13px,1.7vw,19px);line-height:1.45;
+  background:linear-gradient(#f4e6bb,#dcc489);color:#2e2010;border:2px solid #3a2412;border-radius:6px;box-shadow:0 0 0 2px var(--brass2),0 8px 24px #000a;
+  opacity:0;animation:labk .5s 1.7s forwards}
+#intro .ilabel small{display:block;font-size:.78em;font-weight:700;color:#6a4a2a}
+@keyframes labk{from{opacity:0;margin-top:10px}to{opacity:1;margin-top:0}}
+#intro .skip{position:absolute;right:14px;bottom:12px;font-size:12px;color:#f3e4b8;background:#0008;padding:3px 10px;border-radius:10px}
+
 /* ---------- 유물 강조 / 공격 / 패시브 ---------- */
 .tile.k-relic:not(.used){transform:translate(-50%,-50%) scale(1.22);z-index:2;
   filter:drop-shadow(0 0 12px #b79bff) drop-shadow(0 3px 2px rgba(40,20,5,.65))}
@@ -309,6 +330,10 @@ main{flex:1;display:flex;flex-direction:column;align-items:center;justify-conten
 #alert{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;z-index:30;opacity:0;
   background:radial-gradient(ellipse at center,rgba(150,20,10,.45),transparent 65%)}
 #alert.show{animation:alin 2.2s ease-out forwards}
+#alert.block{background:radial-gradient(ellipse at center,rgba(20,70,150,.45),transparent 65%)}
+#alert.block .al-big{color:#e6f3ff;-webkit-text-stroke:2px #0d2f66;text-shadow:0 0 20px #4aa8ff,0 5px 0 #0d2f66,0 0 46px #4aa8ff}
+#alert.block .al-sub{background:rgba(13,47,102,.92);border-color:#bfe0ff}
+#alert.block .al-chip{color:#bfe0ff}
 @keyframes alin{0%{opacity:0;transform:scale(1.7)}10%{opacity:1;transform:scale(1)}78%{opacity:1}100%{opacity:0}}
 .al-big{font-size:clamp(46px,9vw,110px);font-weight:900;letter-spacing:.18em;padding-left:.18em;color:#fff2c8;-webkit-text-stroke:2px #7a1208;
   text-shadow:0 0 20px #ff4a36,0 5px 0 #7a1208,0 0 46px #ff4a36}
@@ -508,6 +533,7 @@ kbd{display:inline-block;min-width:22px;padding:1px 6px;border:1px solid #c79a3b
     </div>
     <div id="banner"></div>
     <div id="alert"></div>
+    <div id="intro"></div>
     <div id="msg"></div>
   </div>
 </main>
@@ -573,7 +599,7 @@ kbd{display:inline-block;min-width:22px;padding:1px 6px;border:1px solid #c79a3b
       <div class="panel"><svg class="pic" viewBox="0 0 110 76"><polygon points="9,44 20,26 40,26 51,44 40,62 20,62" fill="#5a4a2e" stroke="#c79a3b" stroke-width="2"/><polygon points="59,44 70,26 90,26 101,44 90,62 70,62" fill="#5a4a2e" stroke="#c79a3b" stroke-width="2"/><circle cx="30" cy="44" r="9" fill="#d9a441" stroke="#000" stroke-width="2"/><circle cx="80" cy="44" r="9" fill="#3fa58b" stroke="#000" stroke-width="2"/><use href="#i-relic" x="71" y="13" width="18" height="18" style="color:#d6c8ff;--wash:rgba(160,130,255,.6);fill:none;stroke:currentColor;stroke-width:4"/><path d="M42 40 L66 40" stroke="#ffd77a" stroke-width="3" stroke-dasharray="5 4" fill="none"/><path d="M64 33 L74 40 L64 47 Z" fill="#ffd77a"/></svg><span>그 타일로 이동한다</span></div>
       <div class="panel hit"><svg class="pic" viewBox="0 0 110 76"><polygon points="55,6 61,22 78,18 67,32 82,42 64,44 62,62 52,48 38,58 40,40 22,36 38,28 36,10 50,20" transform="translate(0 0)" fill="#e5483a" opacity=".85" stroke="#fff2c8" stroke-width="2"/><polygon points="9,50 20,32 40,32 51,50 40,68 20,68" fill="#4a3a24" stroke="#c79a3b" stroke-width="2"/><polygon points="59,50 70,32 90,32 101,50 90,68 70,68" fill="#7a2a1e" stroke="#c79a3b" stroke-width="2"/><circle cx="75" cy="52" r="9" fill="#3fa58b" stroke="#000" stroke-width="2"/><circle cx="87" cy="52" r="9" fill="#d9a441" stroke="#000" stroke-width="2"/><use href="#i-relic" x="78" y="19" width="18" height="18" style="color:#d6c8ff;--wash:rgba(160,130,255,.6);fill:none;stroke:currentColor;stroke-width:4"/><text x="55" y="38" text-anchor="middle" font-size="15" font-weight="900" fill="#fff" stroke="#7a1208" stroke-width="3" paint-order="stroke" font-family="Nanum Myeongjo,Noto Serif KR,Batang,serif">공격!</text></svg><span><em>유물을 빼앗고</em><br>상대는 피해 2</span></div>
     </div>
-    <p class="cap">유물을 든 사람은 쫓기는 처지입니다. 내가 들고 있을 땐 상대가 같은 타일에 오지 못하게 조심하세요.</p>
+    <p class="cap">유물을 든 사람은 쫓기는 처지입니다. 단, <em>방어막이 있으면 공격을 한 번 막아냅니다</em>(방어막은 사라지고 유물은 그대로).</p>
 
     <h3>이러면 패배</h3>
     <div class="chips"><span class="chip">체력 0</span><span class="chip">상대가 먼저 귀환</span><span class="chip">26턴 초과</span></div>
@@ -835,7 +861,7 @@ function newGame(mode, pawns, cpu) {
   const nodes = POS.map(([x, y], i) => ({ id:i, x, y, adj:[], type: i ? 'normal' : 'camp', hidden:false, used:false, risk:0, ev:null }));
   EDGES.forEach(([a, b]) => { nodes[a].adj.push(b); nodes[b].adj.push(a); });
 
-  const relicNode = 8 + rnd(10);            // 유물 위치: 캠프에서 먼 타일 중 무작위
+  const relicNode = Math.random() < .65 ? pick([15, 16, 17]) : pick([11, 12, 13, 14]);   // 유물 위치: 캠프에서 4~5칸 떨어진 곳 중 무작위
   nodes[relicNode].type = 'relic';
 
   const pool = shuffle([
@@ -1043,7 +1069,7 @@ function renderTiles() {
     el.querySelector('.face').innerHTML = ic('i-' + vt);
     const pips = el.querySelector('.pips');
     pips.innerHTML = (n.id === 0 || (n.used && !n.hidden)) ? '' : [0,1,2].map(i => `<i class="pip ${i < n.risk ? 'f' : ''}"></i>`).join('');
-    el.querySelector('.nm').textContent = atk ? '공격!' : (n.id === 0 ? '캠프' : (peek ? '정찰: ' + TNAME[vt] : (n.used ? '지나옴' : TNAME[vt])));
+    el.querySelector('.nm').textContent = atk ? (opp.shield > 0 ? '공격 (방어막)' : '공격!') : (n.id === 0 ? '캠프' : (peek ? '정찰: ' + TNAME[vt] : (n.used ? '지나옴' : TNAME[vt])));
     const tm = el.querySelector('.tm'), tr = G.traps.find(t => t.node === n.id && trapVisible(t));
     tm.classList.toggle('on', !!tr);
     if (tr) { tm.innerHTML = ic('i-trap'); tm.style.setProperty('--tc', RING[tr.owner]); }
@@ -1100,10 +1126,11 @@ function hurtPlayer(p, n) {
   n = Math.max(0, n); p.hp -= n; return { dmg:n, blocked };
 }
 let alertT = 0;
-function showAlert(big, sub, chip) {
+function showAlert(big, sub, chip, kind) {
   const a = $('#alert');
+  a.className = kind || '';
   a.innerHTML = `<div class="al-big">${big}</div><div class="al-sub">${sub}</div>` + (chip ? `<div class="al-chip">${chip}</div>` : '');
-  a.classList.remove('show'); void a.offsetWidth; a.classList.add('show');
+  void a.offsetWidth; a.classList.add('show');
   clearTimeout(alertT); alertT = setTimeout(() => a.classList.remove('show'), 2300);
 }
 function shakeBoard() { const b = $('#board'); b.classList.remove('shake'); void b.offsetWidth; b.classList.add('shake'); }
@@ -1218,7 +1245,13 @@ function arrive(p, node, notes) {
   let stolen = false;
   if (G.mode === 2 && node.id !== 0) {    // 유물 든 상대와 같은 타일 → 공격! 유물 강탈 + 피해 2
     const o = other();
-    if (o.relic && o.pos === p.pos) {
+    if (o.relic && o.pos === p.pos && o.shield > 0) {      // 방어막이 공격을 한 번 막아낸다
+      o.shield = 0; stolen = true;
+      Snd.sfx('guard'); shakeBoard();
+      showAlert('방어!', `${o.name}의 방어막이 ${p.name}의 공격을 막아냈다`, '유물을 지켰다 · 방어막 소모', 'block');
+      msg(`${o.name}의 방어막이 공격을 막았다! 방어막은 사라졌다.`);
+      renderAll();
+    } else if (o.relic && o.pos === p.pos) {
       o.relic = false; p.relic = true; stolen = true;
       const r = hurtPlayer(o, 2);
       Snd.sfx('steal'); setTimeout(() => Snd.sfx('hurt'), 220); shakeBoard();
@@ -1488,6 +1521,30 @@ function cpuTurn() {
   }, 900);
 }
 
+
+function introRelic() {            // 게임 시작 시 유물 위치를 연출로 알려준다
+  const g = G, rn = G.nodes[G.relicNode], el = $('#intro');
+  G.phase = 'intro'; renderAll();
+  const pts = hopPath(0, G.relicNode).map(i => G.nodes[i].x + ',' + G.nodes[i].y).join(' ');
+  const below = rn.y < 200;
+  el.style.setProperty('--rx', (rn.x / 10) + '%'); el.style.setProperty('--ry', (rn.y / 6) + '%');
+  el.innerHTML = `<div class="dim"></div><svg viewBox="0 0 1000 600" preserveAspectRatio="none"><polyline class="route" pathLength="1" points="${pts}"/></svg>
+    <i class="ping" style="animation-delay:1.7s"></i><i class="ping" style="animation-delay:2.05s"></i><i class="ping" style="animation-delay:2.4s"></i>
+    <div class="ilabel" style="top:calc(${rn.y / 6}% ${below ? '+' : '-'} var(--tile) * .75);transform:translate(-50%,${below ? '0' : '-100%'})">유물은 이곳에 잠들어 있다<small>먼저 찾아 캠프로 돌아오세요</small></div>
+    <span class="skip">눌러서 건너뛰기</span>`;
+  el.classList.remove('on'); void el.offsetWidth; el.classList.add('on');
+  msg('유물이 잠든 곳을 확인하세요...');
+  setTimeout(() => { if (G === g && G.phase === 'intro') Snd.sfx('reveal'); }, 350);
+  setTimeout(() => { if (G === g && G.phase === 'intro') Snd.sfx('relic'); }, 1700);
+  const end = () => {
+    if (G !== g || G.phase !== 'intro') return;
+    el.classList.remove('on'); el.innerHTML = '';
+    G.phase = 'idle'; renderAll(); msg(`${cur().name}의 차례입니다. 카드를 한 장 고르세요.`);
+  };
+  el.onclick = end;
+  setTimeout(end, 3300);
+}
+
 /* ---------- 말 선택 / 메뉴 ---------- */
 let pickState = null;
 function pawnPreview(def, ring) {
@@ -1527,6 +1584,7 @@ function startMode(m, pawns, cpu) {
   $('#menu').classList.add('hidden');
   closeModal();
   newGame(m, pawns, cpu);
+  introRelic();
 }
 
 /* ---------- 입력 ---------- */
