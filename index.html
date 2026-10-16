@@ -204,6 +204,7 @@ main{flex:1;display:flex;flex-direction:column;align-items:center;justify-conten
 .card:hover:not(:disabled){transform:translateY(-8px);box-shadow:0 0 0 1.5px var(--brass), 0 14px 18px rgba(0,0,0,.6), inset 0 0 18px rgba(110,70,20,.3)}
 .card.sel{transform:translateY(-12px);box-shadow:0 0 0 3px #f3c44d,0 0 22px #f3c44d,inset 0 0 18px rgba(110,70,20,.3)}
 .card:disabled{filter:grayscale(.9) brightness(.55)}
+.card.cpu,.card.cpu:disabled{filter:none;transform:translateY(-12px);box-shadow:0 0 0 3px #7fd1ff,0 0 22px #7fd1ff}
 .card .key{position:absolute;top:2px;right:7px;font-size:10px;opacity:.5;font-weight:800}
 .card .med{flex:0 0 52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:34px;
   background:radial-gradient(circle at 35% 30%,#f7eccb,#d0b57a);border:2.5px solid #3a2412;box-shadow:inset 0 0 0 2px var(--brass),0 2px 3px #0006;color:var(--ink);--wash:rgba(130,90,40,.28)}
@@ -459,20 +460,33 @@ main{flex:1;display:flex;flex-direction:column;align-items:center;justify-conten
     <svg class="ic rose"><use href="#i-rose"/></svg>
     <div class="logo">WILDERPATH</div>
     <div class="sub">잊 힌 숲</div>
-    <button class="bigbtn" id="btn1">혼자 플레이</button>
+    <button class="bigbtn" id="btn1">혼자 플레이 (컴퓨터 대결)</button>
     <button class="bigbtn alt" id="btn2">2인 로컬 대전</button>
+    <button class="bigbtn alt" id="btnHow">게임 방법</button>
     <button class="bigbtn alt" id="btnResume" style="display:none">게임으로 돌아가기</button>
-    <div class="rules">
-      <b>목표</b> 숲 깊은 곳의 <b>유물</b>을 찾아 <b>캠프</b>로 돌아오면 승리! 체력이 0이 되거나 제한 턴 안에 귀환하지 못하면 패배합니다.
+  </div></div>
+</div>
+
+<!-- 게임 방법 -->
+<div id="howto" class="backdrop hidden">
+  <div class="sheet dark"><div class="mbd">
+    <h2 style="color:var(--brass);letter-spacing:.2em;font-size:22px;margin-bottom:10px">게임 방법</h2>
+    <div class="rules" style="margin-top:0">
+      <b>목표</b> 숲 깊은 곳의 <b>유물</b>을 먼저 찾아 <b>캠프</b>로 귀환하면 승리합니다.<br>
+      <b>패배</b> 체력이 0이 되거나, 상대가 먼저 귀환하거나, 제한 턴(26턴)이 끝나 상대가 앞서면 패배합니다.
       <ul>
-        <li>매 턴 카드 한 장: <b>이동</b>(인접 타일 1칸, 식량 -1) · <b>채집</b>(식량 +2) · <b>방어</b>(다음 피해 -3) · <b>치유</b>(체력 +3, 식량 -1)</li>
-        <li>타일을 직접 눌러도 이동합니다. 식량이 없으면 이동할 때 체력을 잃습니다.</li>
-        <li>미지 타일은 도착해야 정체가 드러나고, 점은 위험도를 뜻합니다.</li>
-        <li>사건이 일어나면 창이 열리고, 선택지 3개 중 하나를 고릅니다.</li>
-        <li><b>2인 모드</b>: 번갈아 플레이. 먼저 유물을 들고 귀환하거나 상대 체력이 0이 되면 승리. 유물을 든 상대와 같은 타일에 도착하면 유물을 빼앗습니다. 무승부는 없습니다.</li>
-        <li>단축키: 카드 1~4 · 사건 선택지 1~3</li>
+        <li><b>혼자 플레이</b>는 컴퓨터와 겨룹니다. <b>2인 대전</b>은 한 화면에서 번갈아 플레이합니다. 무승부는 없습니다.</li>
+        <li>매 턴 카드 한 장을 씁니다.<br>
+          <b>이동</b> 인접 타일로 한 칸(식량 -1, 식량이 없으면 체력 -1) · <b>채집</b> 식량 +2 · <b>방어</b> 다음 피해를 3 줄임 · <b>치유</b> 체력 +3(식량 -1)</li>
+        <li>타일을 직접 눌러도 이동합니다.</li>
+        <li><b>미지</b> 타일은 도착해야 정체가 드러나며, 타일 아래 <b>점</b>은 위험도(최대 3)입니다.</li>
+        <li>식량, 위험, 보상, 유물 타일에 도착하면 사건 창이 열리고 선택지 3개 중 하나를 고릅니다. 위험 사건은 반드시 선택해야 하고, 그 외에는 닫고 지나칠 수 있습니다.</li>
+        <li><b>캠프</b>에 도착하면 체력 +1. 유물을 들고 도착하면 승리합니다.</li>
+        <li>상대가 유물을 들고 있을 때 <b>같은 타일에 도착하면 유물을 빼앗습니다.</b></li>
+        <li>단축키: 카드 1~4 · 사건 선택지 1~3 · 음악 M</li>
       </ul>
     </div>
+    <button class="bigbtn alt" id="howClose" style="margin-top:14px">닫기</button>
   </div></div>
 </div>
 
@@ -707,7 +721,7 @@ let G = null;
 const cur = () => G.players[G.cur];
 const other = () => G.players[1 - G.cur];
 
-function newGame(mode, pawns) {
+function newGame(mode, pawns, cpu) {
   const nodes = POS.map(([x, y], i) => ({ id:i, x, y, adj:[], type: i ? 'normal' : 'camp', hidden:false, used:false, risk:0, ev:null }));
   EDGES.forEach(([a, b]) => { nodes[a].adj.push(b); nodes[b].adj.push(a); });
 
@@ -730,12 +744,12 @@ function newGame(mode, pawns) {
     n.hidden = n.id !== 0 && n.type !== 'relic' && Math.random() < .55;
   });
 
-  const mk = i => ({ name:`플레이어 ${i + 1}`, pawn:pawns[i], hp:MAX_HP, food:6, relic:false, shield:0, pos:0, alive:true });
-  G = { mode, pawns, nodes, relicNode, players: mode === 2 ? [mk(0), mk(1)] : [mk(0)],
+  const mk = i => ({ name: cpu ? (i ? '컴퓨터' : '플레이어') : `플레이어 ${i + 1}`, cpu: !!(cpu && i === 1), pawn:pawns[i], hp:MAX_HP, food:6, relic:false, shield:0, pos:0, alive:true });
+  G = { mode, cpu: !!cpu, cpuCard:null, pawns, nodes, relicNode, players: mode === 2 ? [mk(0), mk(1)] : [mk(0)],
         cur:0, turn:1, maxTurn:MAX_TURN, phase:'idle', sel:false, curNode:null };
   $('#maxturn').textContent = MAX_TURN;
   buildBoard(); renderAll();
-  msg(mode === 2 ? '플레이어 1의 차례입니다. 카드를 한 장 고르세요.' : '카드를 한 장 골라 숲으로 나아가세요.');
+  msg(`${cur().name}의 차례입니다. 카드를 한 장 고르세요.`);
   hideBanner();
 }
 
@@ -941,7 +955,7 @@ function renderPawns(hop, idx) {
 function renderHUD() {
   $('#players').innerHTML = G.players.map((p, i) => `
     <div class="pp ${i === G.cur ? 'active' : ''} ${p.alive ? '' : 'dead'}">
-      <div class="who"><span class="nm"><i class="tok" style="background:${RING[i]}"></i>${G.mode === 1 ? '탐험가' : p.name}</span>
+      <div class="who"><span class="nm"><i class="tok" style="background:${RING[i]}"></i>${p.name}</span>
         <span class="sb">${pawnById(p.pawn).name}</span><span class="turnmark">현재 차례</span></div>
       <div class="meters">
         <div class="meter hp">${ic('i-heart')}<div class="track"><i style="width:${p.hp / MAX_HP * 100}%"></i></div><b>${p.hp}/${MAX_HP}</b></div>
@@ -973,7 +987,7 @@ function cardDisabled(k) {
 }
 function renderCards() {
   $('#cards').innerHTML = CARDS.map((c, i) => `
-    <button class="card ${c.k === 'move' && G.sel ? 'sel' : ''}" data-k="${c.k}" ${cardDisabled(c.k) ? 'disabled' : ''}>
+    <button class="card ${c.k === 'move' && G.sel ? 'sel' : ''} ${G.cpuCard === c.k ? 'cpu' : ''}" data-k="${c.k}" ${cardDisabled(c.k) ? 'disabled' : ''}>
       <span class="key">${i + 1}</span>
       <div class="med">${ic(c.icon)}</div>
       <div class="tx"><h3>${c.name}</h3><p>${c.desc}</p><span class="cost">${c.cost}</span></div>
@@ -985,6 +999,7 @@ function msg(t) { $('#msg').textContent = t; }
 let bannerT = 0;
 function showBanner(text, chips) {
   const b = $('#banner');
+  if (G && cur().cpu && !text.includes('컴퓨터')) text = '컴퓨터 — ' + text;
   b.innerHTML = `<p>${text}</p>` + (chips ? `<div class="chips">${chips}</div>` : '');
   b.classList.add('show');
   clearTimeout(bannerT);
@@ -1087,6 +1102,11 @@ function openEvent(node, notes) {
   if (!node.ev) node.ev = pick(EVENTS[node.type]);
   const ev = node.ev;
   G.phase = 'modal'; G.curNode = node; G.pendingNotes = notes || [];
+  if (cur().cpu) {                       // 컴퓨터는 모달 없이 계산해서 고른다
+    const g = G;
+    setTimeout(() => { if (G === g && G.phase === 'modal' && G.curNode === node) chooseOpt(cpuPickOpt(node, cur())); }, 900);
+    return;
+  }
   Snd.sfx('paper');
   $('#martArea').innerHTML = sceneSVG(ev);
   $('#mkick').textContent = THEME[ev.theme].kick;
@@ -1146,7 +1166,7 @@ function chooseOpt(i) {
   G.phase = 'busy';
   Snd.sfx('seal');
   setTimeout(() => Snd.sfx(p.relic && !before.relic ? 'relic' : dh < 0 ? 'hurt' : (dh > 0 || df > 0 ? 'good' : 'click')), 160);
-  showBanner(text + (p.relic && !before.relic ? ' 이제 캠프로 돌아가야 한다!' : ''), all);
+  showBanner((p.cpu ? `[${ev.title}] ` : '') + text + (p.relic && !before.relic ? ' 이제 캠프로 돌아가야 한다!' : ''), all);
   renderAll();
   if (p.relic && !before.relic) msg('유물을 얻었다! 빛나는 캠프 타일로 돌아가세요.');
   setTimeout(() => { if (!checkDeath(p)) endTurn(); }, 450);
@@ -1177,7 +1197,12 @@ function endTurn() {
   renderAll();
   if (G.mode === 2) setTimeout(() => Snd.sfx('bell'), 420);
   msg(G.mode === 2 ? `${cur().name}의 차례입니다.` : (G.turn >= G.maxTurn - 3 ? '해가 저문다... 서둘러야 한다!' : '다음 행동을 고르세요.'));
-  setTimeout(() => { if (G.phase === 'busy') { G.phase = 'idle'; renderAll(); } }, 500);
+  const g = G;
+  setTimeout(() => {
+    if (G !== g || G.phase !== 'busy') return;
+    if (cur().cpu) { G.phase = 'cpu'; renderAll(); msg('컴퓨터가 생각 중입니다...'); setTimeout(cpuTurn, 800); }
+    else { G.phase = 'idle'; renderAll(); }
+  }, 500);
 }
 
 function timeUp() {
@@ -1191,15 +1216,88 @@ function timeUp() {
 }
 
 function finish(win, p, text) {
+  if (G.cpu) { win = !p.cpu; if (p.cpu) text = '컴퓨터의 승리 — ' + text; }
   G.phase = 'over'; G.sel = false;
   renderAll();
   setTimeout(() => Snd.sfx(win ? 'win' : 'lose'), 350);
   const r = $('#result');
   r.className = 'backdrop ' + (win ? 'win' : 'lose');
   $('#rem').innerHTML = `<use href="#${win ? 'i-relic' : 'i-danger'}"/>`;
-  $('#rtitle').textContent = G.mode === 1 ? (win ? '승리!' : '패배') : `${p.name} 승리!`;
+  $('#rtitle').textContent = (G.cpu || G.mode === 1) ? (win ? '승리!' : '패배') : `${p.name} 승리!`;
   $('#rtext').textContent = text + ` (${Math.min(G.turn, G.maxTurn)}턴)`;
   setTimeout(() => r.classList.remove('hidden'), 700);
+}
+
+
+/* ---------- 컴퓨터 상대 ---------- */
+function tileCost(n) {
+  if (n.id === 0 || n.used) return 1;
+  let c = 1 + n.risk * .7;
+  if (!n.hidden && n.type === 'danger') c += 1.2;
+  if (!n.hidden && (n.type === 'food' || n.type === 'reward')) c -= .4;
+  return c;
+}
+function route(from, goal, cost) {      // 다익스트라: {step, hops}
+  const N = G.nodes.length, dist = Array(N).fill(Infinity), prev = {}, done = new Set();
+  dist[from] = 0;
+  for (;;) {
+    let u = -1, b = Infinity;
+    for (let i = 0; i < N; i++) if (!done.has(i) && dist[i] < b) { b = dist[i]; u = i; }
+    if (u < 0 || u === goal) break;
+    done.add(u);
+    for (const v of G.nodes[u].adj) { const c = dist[u] + cost(G.nodes[v]); if (c < dist[v]) { dist[v] = c; prev[v] = u; } }
+  }
+  if (from === goal || dist[goal] === Infinity) return { step:null, hops:0 };
+  let c = goal, hops = 1; while (prev[c] !== from && prev[c] !== undefined) { c = prev[c]; hops++; }
+  return { step:c, hops };
+}
+function cpuDecide() {
+  const p = cur(), o = other();
+  const goal = p.relic ? 0 : (o.relic ? o.pos : G.relicNode);
+  const { step, hops } = route(p.pos, goal, tileCost);
+  const backHops = p.relic ? 0 : (function () { let h = 0, f = [G.relicNode], seen = { [G.relicNode]: 1 }; while (f.length && !seen[0]) { const nx = []; h++; f.forEach(n => G.nodes[n].adj.forEach(m => { if (!seen[m]) { seen[m] = 1; nx.push(m); } })); f = nx; } return h; })();
+  const need = hops + (o.relic ? 0 : backHops);
+  const left = G.maxTurn - G.turn;
+  const canHeal = p.hp < MAX_HP && p.food >= 1, canGather = p.food < MAX_FOOD, canGuard = !p.shield;
+  const nxt = step != null ? G.nodes[step] : null;
+  const slack = left - need;
+  if (slack > 2 && p.hp <= 3 && canHeal) return { k:'heal' };
+  if (slack > 2 && p.food <= 1 && canGather) return { k:'gather' };
+  if (nxt && slack > 1 && canGuard && p.hp > 3 && !nxt.used && (nxt.risk >= 2 || (!nxt.hidden && nxt.type === 'danger'))) return { k:'guard' };
+  if (slack > 3 && p.hp <= 6 && p.food >= 3 && canHeal && Math.random() < .5) return { k:'heal' };
+  if (step != null) return { k:'move', to:step };
+  return { k:'move', to:G.nodes[p.pos].adj[0] };
+}
+function cpuPickOpt(node, p) {          // 선택지를 40번씩 가상 실행해 기대값이 높은 쪽을 고른다
+  let best = 0, bs = -1e9;
+  node.ev.opts.forEach((o, i) => {
+    if (o.cost && p.food < o.cost.food) return;
+    let sum = 0; const N = 40;
+    for (let k = 0; k < N; k++) {
+      const s = { hp:p.hp, food:p.food - (o.cost ? o.cost.food : 0), shield:p.shield, relic:p.relic };
+      o.run({
+        hurt(n) { if (s.shield > 0) { n -= Math.min(n, 3); s.shield = 0; } s.hp -= Math.max(0, n); },
+        food(n) { s.food = clamp(s.food + n, 0, MAX_FOOD); }, heal(n) { s.hp = clamp(s.hp + n, 0, MAX_HP); },
+        shield() { s.shield = 1; }, relic() { s.relic = true; }, chance(x) { return Math.random() < x; }
+      });
+      sum += (s.hp <= 0 ? -80 : s.hp * 2.4) + s.food * 1.2 + s.shield * 2 + (s.relic && !p.relic ? 25 : 0);
+    }
+    const sc = sum / N + Math.random() * .6;
+    if (sc > bs) { bs = sc; best = i; }
+  });
+  return best;
+}
+function cpuTurn() {
+  if (!G || G.phase !== 'cpu') return;
+  const g = G, act = cpuDecide(), card = CARDS.find(c => c.k === act.k);
+  G.cpuCard = act.k; renderCards();
+  msg(`컴퓨터가 「${card.name}」 카드를 사용합니다.`);
+  setTimeout(() => {
+    if (G !== g || G.phase !== 'cpu') return;
+    G.cpuCard = null; G.phase = 'idle';
+    if (act.k === 'move') onTile(act.to); else useCard(act.k);
+    if (G === g && G.phase === 'idle' && cur().cpu) onTile(G.nodes[cur().pos].adj[0]);   // 안전장치
+  }, 900);
 }
 
 /* ---------- 말 선택 / 메뉴 ---------- */
@@ -1213,7 +1311,7 @@ function pawnPreview(def, ring) {
 function renderPick() {
   const s = pickState, who = s.chosen.length;
   $('#pickTitle').textContent = s.mode === 1 ? '말을 고르세요' : `플레이어 ${who + 1}의 말을 고르세요`;
-  $('#pickDesc').textContent = s.mode === 1 ? '탐험을 함께할 말을 하나 선택하세요.' : (who === 0 ? '먼저 플레이어 1이 고릅니다. 고른 말은 상대가 쓸 수 없습니다.' : '남은 말 중에서 고르세요.');
+  $('#pickDesc').textContent = s.mode === 1 ? '내 말을 고르세요. 컴퓨터는 남은 말 중 하나를 사용합니다.' : (who === 0 ? '먼저 플레이어 1이 고릅니다. 고른 말은 상대가 쓸 수 없습니다.' : '남은 말 중에서 고르세요.');
   const g = $('#pgrid'); g.innerHTML = '';
   PAWNS.forEach(def => {
     const taken = s.chosen.includes(def.id);
@@ -1222,7 +1320,11 @@ function renderPick() {
     b.querySelector('.pvbox').appendChild(pawnPreview(def, RING[who]));
     b.addEventListener('click', () => {
       s.chosen.push(def.id);
-      if (s.chosen.length === s.mode) { $('#pick').classList.add('hidden'); startMode(s.mode, s.chosen); }
+      if (s.chosen.length === s.mode) {
+        $('#pick').classList.add('hidden');
+        if (s.mode === 1) startMode(2, [s.chosen[0], pick(PAWNS.filter(x => x.id !== s.chosen[0])).id], true);
+        else startMode(2, s.chosen, false);
+      }
       else renderPick();
     });
     g.appendChild(b);
@@ -1233,10 +1335,10 @@ function openPick(mode) {
   $('#menu').classList.add('hidden'); $('#pick').classList.remove('hidden');
   renderPick();
 }
-function startMode(m, pawns) {
+function startMode(m, pawns, cpu) {
   $('#menu').classList.add('hidden');
   closeModal();
-  newGame(m, pawns);
+  newGame(m, pawns, cpu);
 }
 
 /* ---------- 입력 ---------- */
@@ -1244,12 +1346,15 @@ $('#mclose').addEventListener('click', skipEvent);
 $('#btnMusic').addEventListener('click', () => Snd.toggleMusic());
 $('#btnSfx').addEventListener('click', () => Snd.toggleSfx());
 document.addEventListener('pointerdown', () => Snd.unlock());
-document.addEventListener('click', e => { if (e.target.closest('.bigbtn,.pbtn,#menuBtn')) Snd.sfx('click'); }, true);
+document.addEventListener('click', e => { if (e.target.closest('.bigbtn,.pbtn,#menuBtn,#howClose')) Snd.sfx('click'); }, true);
 $('#btn1').addEventListener('click', () => openPick(1));
 $('#btn2').addEventListener('click', () => openPick(2));
 $('#pickBack').addEventListener('click', () => { $('#pick').classList.add('hidden'); $('#menu').classList.remove('hidden'); });
+$('#btnHow').addEventListener('click', () => { $('#menu').classList.add('hidden'); $('#howto').classList.remove('hidden'); });
+function closeHow() { $('#howto').classList.add('hidden'); $('#menu').classList.remove('hidden'); }
+$('#howClose').addEventListener('click', closeHow);
 $('#btnResume').addEventListener('click', () => $('#menu').classList.add('hidden'));
-$('#again').addEventListener('click', () => { $('#result').classList.add('hidden'); startMode(G.mode, G.pawns); });
+$('#again').addEventListener('click', () => { $('#result').classList.add('hidden'); startMode(G.mode, G.pawns, G.cpu); });
 $('#toMenu').addEventListener('click', () => { $('#result').classList.add('hidden'); $('#btnResume').style.display = 'none'; $('#menu').classList.remove('hidden'); });
 $('#menuBtn').addEventListener('click', () => {
   if (G.phase === 'modal') return;
@@ -1258,6 +1363,7 @@ $('#menuBtn').addEventListener('click', () => {
 });
 document.addEventListener('keydown', e => {
   if (!G) return;
+  if (!$('#howto').classList.contains('hidden')) { if (e.key === 'Escape') closeHow(); return; }
   if (['#menu', '#result', '#pick'].some(s => !$(s).classList.contains('hidden'))) return;
   if (G.phase === 'modal') {
     if (e.key >= '1' && e.key <= '3') { const b = document.querySelector(`.opt[data-i="${+e.key - 1}"]`); if (b && !b.disabled) b.click(); }
