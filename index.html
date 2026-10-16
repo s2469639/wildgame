@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>WILDERPATH — 잊힌 숲</title>
+<style>
+:root{
+  --bg:#0b160f; --moss:#1d3623; --leaf:#34603a; --bark:#5a3d24; --dirt:#8a6a45;
+  --parch:#ecdcb2; --parch2:#cdb98a; --gold:#e8b94a; --red:#c8493a; --ink:#2a1d10;
+  --p1:#e8b94a; --p2:#7fd36b;
+  --bw:min(96vw, calc((100dvh - 372px) * 1.6667), 1100px);
+  --tile:calc(var(--bw) * .092);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:
+    radial-gradient(ellipse at 50% -10%, #25452c 0%, transparent 55%),
+    radial-gradient(ellipse at 50% 120%, #1a2a14 0%, transparent 50%),
+    linear-gradient(#0b160f,#08110c);
+  color:var(--parch);
+  font-family:"Noto Serif KR","Nanum Myeongjo","Malgun Gothic","Apple SD Gothic Neo",serif;
+  min-height:100dvh; display:flex; flex-direction:column; align-items:center;
+  user-select:none; -webkit-user-select:none; overflow-x:hidden;
+}
+button{font-family:inherit;cursor:pointer;color:inherit}
+button:disabled{cursor:not-allowed}
+
+/* ---------- HUD ---------- */
+#hud{
+  width:min(1100px,98vw); margin-top:8px; padding:8px 12px;
+  display:flex; align-items:stretch; gap:10px; flex-wrap:wrap; justify-content:center;
+  background:linear-gradient(#3a2916,#2a1d10); border:2px solid #1a110a; border-radius:12px;
+  box-shadow:0 6px 18px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.12);
+}
+.brand{display:flex;flex-direction:column;justify-content:center;min-width:120px}
+.brand b{font-size:18px;letter-spacing:.14em;color:var(--gold);text-shadow:0 2px 0 #000}
+.brand small{font-size:11px;color:var(--parch2);letter-spacing:.3em}
+#players{display:flex;gap:10px;flex:1;min-width:260px;justify-content:center;flex-wrap:wrap}
+.pp{
+  flex:1;min-width:220px;max-width:340px;padding:6px 10px;border-radius:9px;
+  background:rgba(0,0,0,.28);border:2px solid transparent;transition:.25s;opacity:.65;
+}
+.pp.active{opacity:1;border-color:var(--gold);box-shadow:0 0 14px rgba(232,185,74,.45);background:rgba(232,185,74,.08)}
+.pp.dead{filter:grayscale(1);opacity:.4}
+.pp .who{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;margin-bottom:3px}
+.pp .tok{width:12px;height:12px;border-radius:50%;border:2px solid #000;display:inline-block}
+.pp .turnmark{margin-left:auto;font-size:11px;color:var(--gold);font-weight:400;font-style:normal;visibility:hidden}
+.pp.active .turnmark{visibility:visible}
+.stat{display:flex;align-items:center;gap:6px;font-size:12px;margin:2px 0}
+.stat .ic{width:18px;text-align:center}
+.bar{flex:1;height:11px;display:flex;gap:2px;background:#0006;padding:1px;border-radius:4px}
+.bar i{flex:1;border-radius:2px;background:#0005}
+.bar.hp i.on{background:linear-gradient(#ff7a6a,#c8493a)}
+.bar.fd i.on{background:linear-gradient(#ffc766,#d98c24)}
+.stat b{width:38px;text-align:right;font-variant-numeric:tabular-nums}
+.badges{display:flex;gap:6px;margin-top:3px;font-size:11px}
+.badges span{padding:1px 7px;border-radius:10px;background:#0006;color:#8a7d60;border:1px solid #0000}
+.badges span.on{background:rgba(120,90,255,.25);color:#e1d4ff;border-color:#9b7bff;box-shadow:0 0 8px #7a5cff88}
+.badges span.sh.on{background:rgba(90,170,255,.2);color:#cfe8ff;border-color:#6fb4ff;box-shadow:0 0 8px #4a9cff88}
+.turnbox{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 12px;
+  background:rgba(0,0,0,.3);border-radius:9px;min-width:84px}
+.turnbox small{font-size:10px;color:var(--parch2);letter-spacing:.2em}
+.turnbox div{font-size:22px;font-weight:700;color:var(--gold)}
+.turnbox div span{font-size:13px;color:var(--parch2)}
+.turnbox.warn div{color:#ff8a6a;animation:blink 1s infinite}
+@keyframes blink{50%{opacity:.5}}
+#menuBtn{background:#00000040;border:1px solid #0008;border-radius:8px;padding:0 12px;font-size:12px;color:var(--parch2)}
+#menuBtn:hover{background:#0007}
+
+/* ---------- Board ---------- */
+main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;padding:8px 0 2px}
+#board{
+  position:relative;width:var(--bw);aspect-ratio:1000/600;
+  border:clamp(6px,1.1vw,12px) solid #4a3019;border-radius:16px;
+  background:
+    radial-gradient(circle at 20% 30%, rgba(255,255,255,.05) 0 2px, transparent 3px) 0 0/38px 38px,
+    radial-gradient(circle at 70% 70%, rgba(0,0,0,.18) 0 2px, transparent 3px) 0 0/26px 26px,
+    radial-gradient(ellipse at 15% 50%, #3c5f2c 0%, transparent 40%),
+    radial-gradient(ellipse at 85% 30%, #1d3a2a 0%, transparent 50%),
+    linear-gradient(135deg,#2a4a2c,#1a3320 55%,#223d26);
+  box-shadow:0 0 0 3px #2a1a0c, 0 14px 40px rgba(0,0,0,.65), inset 0 0 70px rgba(0,0,0,.65);
+}
+#board.fog::after{content:"";position:absolute;inset:0;border-radius:6px;pointer-events:none;
+  background:radial-gradient(ellipse at 100% 50%, rgba(80,40,160,.28), transparent 55%)}
+#paths{position:absolute;inset:0;width:100%;height:100%}
+#tiles,#pawns{position:absolute;inset:0}
+#pawns{pointer-events:none}
+
+.tile{
+  position:absolute;width:var(--tile);height:calc(var(--tile) * .92);transform:translate(-50%,-50%);
+  filter:drop-shadow(0 4px 3px rgba(0,0,0,.65));background:none;border:0;padding:0;transition:transform .2s;
+}
+.tile .face,.tile .rim{position:absolute;clip-path:polygon(25% 3%,75% 3%,100% 50%,75% 97%,25% 97%,0 50%)}
+.tile .rim{inset:0;background:#20140a}
+.tile .face{inset:5%;display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(circle at 35% 28%, var(--f1), var(--f2) 75%)}
+.tile .ico{font-size:calc(var(--tile) * .42);filter:drop-shadow(0 2px 1px #0008)}
+.tile .pips{position:absolute;left:0;right:0;bottom:-3%;text-align:center;font-size:calc(var(--tile) * .17);letter-spacing:1px;line-height:1}
+.pips .f{color:#ff6a50;text-shadow:0 0 4px #f00}
+.pips .e{color:#0008}
+.tile .nm{position:absolute;top:100%;left:50%;transform:translateX(-50%);font-size:calc(var(--tile) * .15);
+  white-space:nowrap;color:var(--parch);text-shadow:0 1px 2px #000;opacity:.85}
+.k-camp{--f1:#a3774a;--f2:#5f3d20}
+.k-normal{--f1:#58804a;--f2:#2f5232}
+.k-food{--f1:#9cc04a;--f2:#4b7a25}
+.k-danger{--f1:#a64a3a;--f2:#4d1a1a}
+.k-reward{--f1:#e0b44a;--f2:#7a5a1d}
+.k-relic{--f1:#9d7bff;--f2:#3c1f78}
+.k-unknown{--f1:#4b5a52;--f2:#1d2622}
+.tile.used .face{filter:saturate(.35) brightness(.7)}
+.tile.used .ico{opacity:.6}
+.tile.reach{cursor:pointer;animation:pulse 1.2s ease-in-out infinite}
+.tile.reach .rim{background:#e8b94a}
+.tile.reach.sel .rim{background:#fff3b0;box-shadow:0 0 0 2px #fff}
+.tile.reach:hover{transform:translate(-50%,-50%) scale(1.12);animation:none;z-index:5}
+.tile.goal .rim{background:#8ff;animation:goal 1s ease-in-out infinite alternate}
+.tile.k-relic:not(.used) .face{animation:relicGlow 1.8s ease-in-out infinite alternate}
+@keyframes pulse{50%{transform:translate(-50%,-50%) scale(1.06)}}
+@keyframes goal{to{background:#fff}}
+@keyframes relicGlow{to{filter:brightness(1.4) drop-shadow(0 0 6px #b79bff)}}
+.tile:focus-visible{outline:none}
+.tile:focus-visible .rim{background:#fff}
+
+#legend{position:absolute;left:1.5%;bottom:2%;display:flex;gap:calc(var(--bw)*.012);flex-wrap:wrap;
+  background:rgba(10,18,12,.7);padding:4px 9px;border-radius:8px;font-size:clamp(9px,calc(var(--bw)*.0125),12px);
+  color:var(--parch2);pointer-events:none}
+#legend span{white-space:nowrap}
+#banner{position:absolute;left:50%;top:3%;transform:translate(-50%,-14px);opacity:0;pointer-events:none;
+  background:rgba(15,10,5,.92);border:2px solid var(--gold);border-radius:12px;padding:8px 18px;text-align:center;
+  max-width:80%;z-index:20;transition:.35s;box-shadow:0 8px 24px #000a}
+#banner.show{opacity:1;transform:translate(-50%,0)}
+#banner p{font-size:clamp(11px,1.5vw,15px);line-height:1.45}
+#banner .chips{margin-top:3px;font-size:clamp(11px,1.4vw,14px);font-weight:700;color:var(--gold)}
+#banner .neg{color:#ff8a78}.pos{color:#8fe08a}
+#msg{width:var(--bw);min-height:24px;text-align:center;font-size:14px;color:var(--parch2);padding:6px 4px 0}
+
+/* ---------- Pawns (3D) ---------- */
+.pawn{position:absolute;width:0;height:0;perspective:700px;transition:left .55s cubic-bezier(.4,.1,.3,1),top .55s cubic-bezier(.4,.1,.3,1);z-index:6}
+.pawn .shadow{position:absolute;left:0;top:0;width:54px;height:20px;margin:-8px 0 0 -27px;border-radius:50%;
+  background:radial-gradient(#000c,#0000 70%);transform:scale(var(--ps,1))}
+.hopper,.tilt,.spin,.solid{transform-style:preserve-3d;position:absolute;left:0;top:0}
+.pawn.active .hopper{animation:bob 1.3s ease-in-out infinite}
+.pawn.hop .hopper{animation:hop .55s ease-in-out}
+@keyframes bob{50%{transform:translateY(-6px)}}
+@keyframes hop{0%{transform:translateY(0)}45%{transform:translateY(-34px)}100%{transform:translateY(0)}}
+.tilt{transform:scale(var(--ps,1)) rotateX(-30deg)}
+.spin{animation:spin 9s linear infinite}
+@keyframes spin{to{transform:rotateY(360deg)}}
+.disc{position:absolute;left:0;top:0;border-radius:50%;backface-visibility:visible}
+.plane{position:absolute;left:0;top:0}
+.coin{width:17px;height:17px;margin:-8px 0 0 -8px;border-radius:50%;border:2px solid #8a5d0c;
+  background:radial-gradient(circle at 35% 30%,#fff3a0,#e8b020 60%,#b57b10);display:flex;align-items:center;justify-content:center;
+  font:700 11px/1 Georgia,serif;color:#7a4d05}
+.leaf{width:15px;height:8px;margin:-4px 0 0 -7px;background:linear-gradient(#7fd36b,#2f7a3a);border-radius:100% 0 100% 0;border:1px solid #1d4d25}
+
+/* ---------- Cards ---------- */
+#cards{display:flex;gap:clamp(6px,1.4vw,16px);justify-content:center;padding:6px 8px 12px;width:100%}
+.card{
+  width:clamp(74px,21vw,176px);aspect-ratio:3/4.1;max-height:176px;position:relative;
+  background:linear-gradient(160deg,#f0e2b8,#cdb47f);color:var(--ink);
+  border:3px solid #5a3d24;border-radius:12px;padding:6px 6px 8px;display:flex;flex-direction:column;align-items:center;
+  box-shadow:0 6px 12px rgba(0,0,0,.55), inset 0 0 0 2px rgba(255,255,255,.35);
+  transition:transform .18s, box-shadow .18s;font-size:clamp(9px,1.25vw,13px);text-align:center;
+}
+.card:hover:not(:disabled){transform:translateY(-10px) rotate(-1deg);box-shadow:0 14px 20px rgba(0,0,0,.6)}
+.card.sel{transform:translateY(-16px);box-shadow:0 0 0 3px var(--gold),0 0 22px var(--gold)}
+.card:disabled{filter:grayscale(.85) brightness(.6)}
+.card .key{position:absolute;top:3px;left:6px;font-size:10px;opacity:.55}
+.card .art{flex:1;display:flex;align-items:center;justify-content:center;width:100%;font-size:clamp(26px,5.4vw,52px);
+  background:radial-gradient(circle,rgba(255,255,255,.5),transparent 70%);filter:drop-shadow(0 3px 2px #0005)}
+.card h3{font-size:clamp(12px,1.7vw,17px);letter-spacing:.2em;margin-bottom:2px;color:#3b2512}
+.card p{line-height:1.25;opacity:.85}
+.card .cost{margin-top:3px;font-size:10px;font-weight:700;color:#7a2f1c}
+
+/* ---------- Overlays / modal ---------- */
+.backdrop{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:14px;
+  background:rgba(4,8,5,.72);backdrop-filter:blur(2px);animation:fade .25s}
+.backdrop.hidden{display:none}
+@keyframes fade{from{opacity:0}}
+.mcard{
+  width:min(560px,100%);max-height:96dvh;overflow:auto;position:relative;
+  background:linear-gradient(#f0e2b8,#d6bf8c);color:var(--ink);border:4px solid #4a3019;border-radius:16px;
+  box-shadow:0 20px 60px #000, inset 0 0 0 2px #fff5;animation:pop .3s cubic-bezier(.2,1.3,.4,1);
+}
+@keyframes pop{from{transform:scale(.88) translateY(20px);opacity:0}}
+.mclose{position:absolute;right:8px;top:8px;z-index:3;width:32px;height:32px;border-radius:50%;border:2px solid #fff8;
+  background:#000a;color:#fff;font-size:16px}
+.mclose:hover{background:#000}
+.art-m{position:relative;height:clamp(120px,24dvh,190px);overflow:hidden;border-radius:12px 12px 0 0;border-bottom:4px solid #4a3019;
+  background:var(--sky)}
+.art-m .mist{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 70%,var(--glow),transparent 65%)}
+.art-m .trees{position:absolute;left:0;right:0;bottom:0;height:70%;background:#0b1d10;
+  clip-path:polygon(0 100%,0 55%,4% 20%,8% 55%,11% 35%,15% 65%,19% 10%,24% 60%,28% 30%,33% 70%,38% 15%,43% 60%,47% 40%,52% 70%,57% 20%,62% 60%,66% 30%,71% 65%,76% 12%,81% 58%,85% 33%,90% 62%,94% 22%,98% 55%,100% 40%,100% 100%)}
+.art-m .trees.b{height:48%;background:#06120a;opacity:.95;
+  clip-path:polygon(0 100%,0 40%,6% 15%,12% 50%,18% 20%,25% 55%,31% 18%,38% 50%,45% 25%,52% 55%,60% 18%,67% 52%,74% 22%,81% 55%,88% 20%,95% 50%,100% 30%,100% 100%)}
+.art-m .emoji{position:absolute;left:50%;top:46%;transform:translate(-50%,-50%);font-size:clamp(54px,12dvh,92px);
+  filter:drop-shadow(0 6px 10px #000b) drop-shadow(0 0 22px var(--glow));animation:float 3s ease-in-out infinite}
+@keyframes float{50%{transform:translate(-50%,-56%)}}
+.art-m .ff{position:absolute;width:5px;height:5px;border-radius:50%;background:#ffe9a0;box-shadow:0 0 8px 3px #ffd75c99;animation:ff 5s ease-in-out infinite}
+@keyframes ff{0%,100%{transform:translate(0,0);opacity:.2}50%{transform:translate(18px,-20px);opacity:1}}
+.th-danger{--sky:linear-gradient(#3a1010,#6a2a22);--glow:#ff5a3a88}
+.th-reward{--sky:linear-gradient(#3b2a0c,#8a6a2a);--glow:#ffd75ccc}
+.th-food{--sky:linear-gradient(#17331a,#4c7d2d);--glow:#b5ff6a77}
+.th-relic{--sky:linear-gradient(#1b1040,#4a2a8a);--glow:#b79bffcc}
+.mbody{padding:14px 18px 18px}
+.kicker{font-size:11px;letter-spacing:.3em;color:#7a2f1c;font-weight:700}
+.mbody h2{font-size:22px;margin:2px 0 8px;color:#2a1608}
+.mbody .story{font-size:14.5px;line-height:1.7;margin-bottom:14px;color:#3b2a18}
+.opts{display:flex;flex-direction:column;gap:8px}
+.opt{display:flex;align-items:center;gap:10px;text-align:left;padding:10px 12px;border-radius:10px;
+  border:2px solid #4a3019;background:linear-gradient(#fff6d6,#e6d09a);color:var(--ink);transition:.15s}
+.opt:hover:not(:disabled){transform:translateX(4px);background:linear-gradient(#fffbe8,#f3dfa5);box-shadow:0 3px 10px #0004}
+.opt:disabled{opacity:.45;filter:grayscale(.6)}
+.opt .n{flex:0 0 26px;height:26px;border-radius:50%;background:#4a3019;color:var(--parch);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+.opt .t{flex:1;font-size:14px;font-weight:700;line-height:1.35}
+.opt .t small{display:block;font-weight:400;font-size:12px;color:#6a4a2a;margin-top:1px}
+.mnote{margin-top:10px;font-size:11px;color:#7a6a4a;text-align:center}
+
+#menu .mcard,#result .mcard{text-align:center;background:linear-gradient(#2a1d10,#1a110a);color:var(--parch);border-color:#6b4a2a}
+#menu .mbody{padding:22px 24px 22px}
+.logo{font-size:clamp(30px,7vw,48px);letter-spacing:.1em;font-weight:900;
+  background:linear-gradient(#fff2b0,#e8b94a 55%,#9a6a14);-webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 3px 0 #000)}
+.sub{letter-spacing:.5em;color:var(--parch2);font-size:13px;margin:2px 0 14px}
+.bigbtn{display:block;width:100%;margin:8px 0;padding:13px;border-radius:12px;border:2px solid #000;font-size:17px;font-weight:700;
+  background:linear-gradient(#5f9a4a,#2f6a2f);color:#fff;text-shadow:0 2px 0 #0007;box-shadow:0 4px 0 #173a17;transition:.12s}
+.bigbtn.alt{background:linear-gradient(#b57a3a,#7a4a1f);box-shadow:0 4px 0 #3d230d}
+.bigbtn:hover{transform:translateY(-2px);filter:brightness(1.12)}
+.bigbtn:active{transform:translateY(2px);box-shadow:0 1px 0 #000}
+.rules{text-align:left;font-size:13px;line-height:1.65;margin-top:14px;padding:12px 14px;background:#0004;border-radius:10px;color:var(--parch2)}
+.rules b{color:var(--gold)}
+.rules ul{padding-left:18px}
+#result h1{font-size:44px;margin:6px 0}
+#result.win h1{color:var(--gold);text-shadow:0 0 24px #ffd75c}
+#result.lose h1{color:#ff7a68;text-shadow:0 0 24px #f00}
+#result p{margin:6px 0 14px;line-height:1.6;color:var(--parch2)}
+#result .em{font-size:64px}
+
+@media (max-width:640px){
+  :root{--tile:calc(var(--bw) * .108);--bw:min(97vw, calc((100dvh - 380px) * 1.6667))}
+  .brand{display:none}
+  .pp{min-width:140px}
+  .stat b{width:30px}
+  .turnbox{min-width:60px}
+}
+</style>
+</head>
+<body>
+
+<header id="hud">
+  <div class="brand"><b>WILDERPATH</b><small>잊힌 숲</small></div>
+  <div id="players"></div>
+  <div class="turnbox" id="turnbox"><small>TURN</small><div><b id="turn">1</b><span> / <span id="maxturn">26</span></span></div></div>
+  <button id="menuBtn" title="메뉴 / 규칙">☰ 메뉴</button>
+</header>
+
+<main id="mainArea">
+  <div id="board">
+    <svg id="paths" viewBox="0 0 1000 600" preserveAspectRatio="none"></svg>
+    <div id="tiles"></div>
+    <div id="pawns"></div>
+    <div id="legend">
+      <span>⛺캠프</span><span>🌲일반</span><span>🍎식량</span><span>💀위험</span><span>🎁보상</span><span>💎유물</span><span>❓미확인(●=위험도)</span>
+    </div>
+    <div id="banner"></div>
+  </div>
+  <div id="msg"></div>
+</main>
+
+<footer id="cards"></footer>
+
+<!-- 사건 모달 -->
+<div id="modal" class="backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="mtitle">
+  <div class="mcard">
+    <button class="mclose" id="mclose" aria-label="닫기">✕</button>
+    <div class="art-m" id="martArea"></div>
+    <div class="mbody">
+      <div class="kicker" id="mkick"></div>
+      <h2 id="mtitle"></h2>
+      <p class="story" id="mstory"></p>
+      <div class="opts" id="mopts"></div>
+      <p class="mnote" id="mnote"></p>
+    </div>
+  </div>
+</div>
+
+<!-- 메인 메뉴 -->
+<div id="menu" class="backdrop">
+  <div class="mcard"><div class="mbody">
+    <div class="logo">WILDERPATH</div>
+    <div class="sub">잊 힌 숲</div>
+    <button class="bigbtn" id="btn1">🎒 혼자 플레이</button>
+    <button class="bigbtn alt" id="btn2">🪵 2인 로컬 대전</button>
+    <button class="bigbtn alt" id="btnResume" style="display:none;background:linear-gradient(#4a4a4a,#2a2a2a);box-shadow:0 4px 0 #111">▶ 게임으로 돌아가기</button>
+    <div class="rules">
+      <b>목표</b> 숲 깊은 곳의 <b>💎유물</b>을 찾아 <b>⛺캠프</b>로 돌아오면 승리!<br>
+      <b>패배</b> 체력 0, 또는 제한 턴 안에 귀환하지 못함.
+      <ul>
+        <li>매 턴 카드 한 장: <b>이동</b>(인접 타일 1칸, 식량 -1) · <b>채집</b>(식량 +2) · <b>방어</b>(다음 피해 -3) · <b>치유</b>(체력 +3, 식량 -1)</li>
+        <li>타일을 직접 클릭해도 이동합니다. 식량이 없으면 이동할 때 체력을 잃어요.</li>
+        <li>❓타일은 도착해야 정체가 드러나고, 점(●)은 위험도입니다.</li>
+        <li>사건이 일어나면 창이 열리고, 3개의 선택지 중 하나를 고릅니다.</li>
+        <li><b>2인 모드</b>: 번갈아 플레이. 먼저 유물을 들고 귀환하면 승리, 상대 체력이 0이 되어도 승리. 유물을 든 상대와 같은 타일에 도착하면 유물을 빼앗습니다. 무승부는 없습니다.</li>
+        <li>단축키: 카드 1~4, 사건 선택지 1~3</li>
+      </ul>
+    </div>
+  </div></div>
+</div>
+
+<!-- 결과 화면 -->
+<div id="result" class="backdrop hidden">
+  <div class="mcard"><div class="mbody">
+    <div class="em" id="rem"></div>
+    <h1 id="rtitle"></h1>
+    <p id="rtext"></p>
+    <button class="bigbtn" id="again">🔁 다시하기</button>
+    <button class="bigbtn alt" id="toMenu">메뉴로</button>
+  </div></div>
+</div>
+
+<script>
+'use strict';
+/* =====================================================================
+   WILDERPATH — 잊힌 숲
+   ===================================================================== */
+const $ = s => document.querySelector(s);
+const rnd = n => Math.floor(Math.random() * n);
+const pick = a => a[rnd(a.length)];
+const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = rnd(i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+
+const MAX_HP = 10, MAX_FOOD = 10, MAX_TURN = 26;
+
+/* ---------- 지도 데이터 (1000x600 좌표) ---------- */
+const POS = [
+  [70,300],
+  [210,150],[210,300],[210,450],
+  [360,90],[360,230],[360,370],[360,510],
+  [520,150],[520,300],[520,450],
+  [680,90],[680,230],[680,370],[680,510],
+  [840,160],[840,300],[840,440]
+];
+const EDGES = [
+  [0,1],[0,2],[0,3],[1,4],[1,5],[2,5],[2,6],[3,6],[3,7],
+  [4,8],[5,8],[5,9],[6,9],[6,10],[7,10],
+  [8,11],[8,12],[9,12],[9,13],[10,13],[10,14],
+  [11,15],[12,15],[12,16],[13,16],[13,17],[14,17]
+];
+
+const ICON = { camp:'⛺', normal:'🌲', food:'🍎', danger:'💀', reward:'🎁', relic:'💎', unknown:'❓' };
+const USED_ICON = { normal:'🌲', food:'🍂', danger:'🦴', reward:'📭', relic:'🕳️' };
+const TNAME = { camp:'캠프', normal:'숲길', food:'식량', danger:'위험', reward:'보상', relic:'유물', unknown:'미확인' };
+const RISK = { danger:[2,3], reward:[1,1], food:[0,1], normal:[0,1], relic:[2,2], camp:[0,0] };
+
+/* ---------- 사건 데이터 ---------- */
+// run(c): c.hurt(n) c.food(n) c.heal(n) c.shield() c.relic() c.chance(p) → 결과 문장 반환
+const EVENTS = {
+  danger: [
+    { emoji:'🐺', theme:'danger', title:'굶주린 늑대 무리', required:true,
+      story:'덤불 속에서 노란 눈들이 하나둘 번뜩인다. 마른 늑대 무리가 길을 막고 낮게 으르렁거린다. 눈을 피하면 곧바로 달려들 기세다.',
+      opts:[
+        { label:'횃불을 휘두르며 맞선다', hint:'피해 2~3 · 쓰러뜨리면 식량 +2', run:c=>{ c.hurt(2+rnd(2)); c.food(2); return '횃불에 놀란 늑대들이 물러났다. 쓰러진 한 마리에게서 고기를 얻었다.'; } },
+        { label:'숨죽이고 우회한다', hint:'55% 무사 · 45% 피해 3', run:c=>{ if(c.chance(.55)) return '그림자처럼 소리 없이 덤불 뒤를 돌아 지나갔다.'; c.hurt(3); return '마른 가지를 밟고 말았다! 늑대의 이빨이 스쳤다.'; } },
+        { label:'식량을 던져주고 지나간다', hint:'식량 -2 · 피해 없음', cost:{food:2}, run:c=>'늑대들이 먹이에 달려든 사이 조용히 빠져나왔다.' }
+      ]},
+    { emoji:'🌫️', theme:'danger', title:'독안개 늪', required:true,
+      story:'발목까지 잠기는 늪에서 보랏빛 안개가 피어오른다. 숨을 쉬면 목이 타는 듯하다. 건너편 길은 안개 너머로 희미하게 보인다.',
+      opts:[
+        { label:'숨을 참고 달려서 건넌다', hint:'피해 2', run:c=>{ c.hurt(2); return '폐가 타들어가는 듯했지만 늪을 건넜다.'; } },
+        { label:'나뭇가지로 길을 더듬는다', hint:'70% 무사 · 30% 피해 3', run:c=>{ if(c.chance(.7)) return '단단한 땅을 하나씩 짚으며 안전하게 건넜다.'; c.hurt(3); return '발이 푹 빠지며 독기를 들이마셨다.'; } },
+        { label:'약초를 태워 안개를 쫓는다', hint:'식량 -1 · 피해 없음', cost:{food:1}, run:c=>'약초 연기가 독기를 밀어냈다. 길이 열렸다.' }
+      ]},
+    { emoji:'🌳', theme:'danger', title:'쓰러지는 고목', required:true,
+      story:'발밑이 울린다. 뿌리째 썩은 거대한 고목이 삐걱거리며 길 위로 기울고 있다. 지금 지나가지 않으면 길이 막혀 버릴 것 같다.',
+      opts:[
+        { label:'몸을 던져 피한다', hint:'피해 1', run:c=>{ c.hurt(1); return '굴러서 간신히 피했다. 팔꿈치가 쓸렸다.'; } },
+        { label:'버팀목을 세우고 지나간다', hint:'식량 -1 · 피해 없음', cost:{food:1}, run:c=>'급히 만든 버팀목이 버텨 주었다.' },
+        { label:'무모하게 전속력으로 통과', hint:'40% 무사 · 60% 피해 4', run:c=>{ if(c.chance(.4)) return '아슬아슬하게 지나쳤다! 등 뒤로 쿵 소리가 울렸다.'; c.hurt(4); return '가지에 정통으로 맞았다!'; } }
+      ]},
+    { emoji:'🌿', theme:'danger', title:'가시덩굴 함정', required:true,
+      story:'길을 가로질러 검은 가시덩굴이 얽혀 있다. 누군가 일부러 쳐 둔 듯한 흔적이 보인다. 덩굴 사이에서 붉은 열매 몇 개가 반짝인다.',
+      opts:[
+        { label:'칼로 베어 길을 연다', hint:'피해 2 · 열매 식량 +1', run:c=>{ c.hurt(2); c.food(1); return '가시에 긁혔지만 길을 열고 열매도 챙겼다.'; } },
+        { label:'조심조심 풀어낸다', hint:'피해 1', run:c=>{ c.hurt(1); return '시간이 걸렸지만 큰 상처 없이 통과했다.'; } },
+        { label:'불을 붙여 태워버린다', hint:'식량 -1 · 피해 없음', cost:{food:1}, run:c=>'덩굴이 비명처럼 타올랐다. 재 위로 길이 열렸다.' }
+      ]}
+  ],
+  reward: [
+    { emoji:'🎒', theme:'reward', title:'버려진 여행자의 짐', required:false,
+      story:'이끼에 덮인 낡은 배낭이 나무뿌리 사이에 놓여 있다. 주인은 보이지 않는다. 안에서 달그락거리는 소리가 난다.',
+      opts:[
+        { label:'꼼꼼히 뒤져 식량을 챙긴다', hint:'식량 +3', run:c=>{ c.food(3); return '말린 고기와 딱딱한 빵을 찾았다.'; } },
+        { label:'약병만 챙긴다', hint:'체력 +3', run:c=>{ c.heal(3); return '쓴 약초즙이 몸을 따뜻하게 했다.'; } },
+        { label:'수상한 나무 상자를 연다', hint:'50% 체력+4·식량+2 / 50% 피해 2', run:c=>{ if(c.chance(.5)){ c.heal(4); c.food(2); return '상자 안에는 귀한 약과 식량이 가득했다!'; } c.hurt(2); return '상자에서 독침이 튀어나왔다!'; } }
+      ]},
+    { emoji:'⛲', theme:'reward', title:'요정의 샘', required:false,
+      story:'숲 한가운데, 은빛 물이 솟는 작은 샘이 있다. 물 위로 작은 빛들이 춤추듯 떠다닌다. 어디선가 맑은 종소리가 들린다.',
+      opts:[
+        { label:'샘물을 마신다', hint:'체력 +4', run:c=>{ c.heal(4); return '차가운 물이 피로를 씻어냈다.'; } },
+        { label:'물을 병에 담는다', hint:'식량 +2 · 체력 +1', run:c=>{ c.food(2); c.heal(1); return '물병이 영롱한 물로 채워졌다.'; } },
+        { label:'샘에 기도한다', hint:'방어막 획득 · 체력 +1', run:c=>{ c.shield(); c.heal(1); return '빛이 몸을 감싸며 방어막이 생겼다.'; } }
+      ]},
+    { emoji:'🗿', theme:'reward', title:'고대 룬석', required:false,
+      story:'덩굴에 반쯤 덮인 돌기둥이 희미한 녹색 빛을 내고 있다. 새겨진 문양은 오래전 이 숲을 지키던 이들의 것이다.',
+      opts:[
+        { label:'손을 얹고 기운을 받는다', hint:'50% 체력 +5 / 50% 피해 1', run:c=>{ if(c.chance(.5)){ c.heal(5); return '따뜻한 힘이 온몸에 흘렀다.'; } c.hurt(1); return '룬이 번쩍이며 손끝을 태웠다.'; } },
+        { label:'문양을 따라 몸에 새긴다', hint:'방어막 획득 · 식량 +1', run:c=>{ c.shield(); c.food(1); return '문양이 보호의 기운이 되어 몸을 감쌌다.'; } },
+        { label:'주변을 살핀다', hint:'식량 +2', run:c=>{ c.food(2); return '돌 틈에서 순례자의 식량 꾸러미를 발견했다.'; } }
+      ]}
+  ],
+  food: [
+    { emoji:'🍓', theme:'food', title:'야생 열매 숲', required:false,
+      story:'붉고 푸른 열매가 가지마다 주렁주렁 매달려 있다. 새들이 지저귀는 소리가 이곳이 평화롭다고 알려주는 듯하다.',
+      opts:[
+        { label:'잔뜩 따서 모은다', hint:'식량 +3', run:c=>{ c.food(3); return '배낭이 열매로 가득 찼다.'; } },
+        { label:'잘 익은 것만 골라 먹는다', hint:'식량 +1 · 체력 +2', run:c=>{ c.food(1); c.heal(2); return '달콤한 열매가 기력을 되살렸다.'; } },
+        { label:'낯선 보랏빛 열매를 딴다', hint:'50% 식량 +5 / 50% 피해 2', run:c=>{ if(c.chance(.5)){ c.food(5); return '맛도 영양도 최고인 열매였다!'; } c.hurt(2); return '독이 있는 열매였다. 속이 뒤집힌다...'; } }
+      ]},
+    { emoji:'🐟', theme:'food', title:'시냇가의 물고기', required:false,
+      story:'맑은 시냇물에 은빛 물고기들이 모여 있다. 바위 위에서 햇살이 따뜻하게 내려앉는다.',
+      opts:[
+        { label:'맨손으로 잡는다', hint:'70% 식량 +4 / 30% 식량 +1', run:c=>{ if(c.chance(.7)){ c.food(4); return '큼직한 물고기를 몇 마리 낚아챘다!'; } c.food(1); return '대부분 놓쳤지만 한 마리는 잡았다.'; } },
+        { label:'낚싯대를 만든다', hint:'식량 +3', run:c=>{ c.food(3); return '느긋하게 기다린 끝에 든든한 식사를 얻었다.'; } },
+        { label:'물가에서 쉰다', hint:'체력 +2 · 식량 +1', run:c=>{ c.heal(2); c.food(1); return '물소리를 들으며 잠시 눈을 붙였다.'; } }
+      ]},
+    { emoji:'🦌', theme:'food', title:'사슴 발자국', required:false,
+      story:'진흙 위에 갓 찍힌 사슴 발자국이 이어져 있다. 멀지 않은 곳에 있는 것 같다. 근처에는 버섯도 눈에 띈다.',
+      opts:[
+        { label:'추적해서 사냥한다', hint:'60% 식량 +5 / 40% 식량 +1·피해 1', run:c=>{ if(c.chance(.6)){ c.food(5); return '화살 한 방! 푸짐한 사냥감을 얻었다.'; } c.food(1); c.hurt(1); return '사슴에게 뒷발로 걷어차였다.'; } },
+        { label:'버섯을 채집한다', hint:'식량 +2', run:c=>{ c.food(2); return '먹을 수 있는 버섯을 가득 땄다.'; } },
+        { label:'발자국을 따라 샘을 찾는다', hint:'체력 +3', run:c=>{ c.heal(3); return '맑은 샘물을 발견해 몸을 적셨다.'; } }
+      ]}
+  ],
+  relic: [
+    { emoji:'💎', theme:'relic', title:'잊힌 제단', required:false,
+      story:'이끼 낀 제단 위에서 푸른 유물이 소리 없이 떠 있다. 숲이 숨을 죽인 듯 고요하다. 제단 주위에는 수호 문양이 새겨져 있다. 이것이 바로 찾던 유물이다.',
+      opts:[
+        { label:'곧장 움켜쥔다', hint:'유물 획득 · 피해 2', run:c=>{ c.relic(); c.hurt(2); return '수호 문양이 번쩍! 충격을 견디고 유물을 손에 넣었다.'; } },
+        { label:'문양을 풀며 신중히 집는다', hint:'유물 획득 · 식량 -2', cost:{food:2}, run:c=>{ c.relic(); return '문양을 하나씩 풀자 유물이 스스로 손에 안겼다.'; } },
+        { label:'숲의 기운을 빌려 손을 뻗는다', hint:'유물 획득 · 50% 무사 / 50% 피해 3', run:c=>{ c.relic(); if(c.chance(.5)) return '숲이 응답했다. 아무 일 없이 유물이 손에 들어왔다.'; c.hurt(3); return '숲이 대가를 요구했다. 유물은 얻었지만 상처를 입었다.'; } }
+      ]}
+  ]
+};
+
+/* ---------- 상태 ---------- */
+let G = null;
+const cur = () => G.players[G.cur];
+const other = () => G.players[1 - G.cur];
+
+function newGame(mode) {
+  const nodes = POS.map(([x, y], i) => ({ id:i, x, y, adj:[], type: i ? 'normal' : 'camp', hidden:false, used:false, risk:0, ev:null }));
+  EDGES.forEach(([a, b]) => { nodes[a].adj.push(b); nodes[b].adj.push(a); });
+
+  // 유물 위치: 캠프에서 먼 8~17번 중 무작위
+  const relicNode = 8 + rnd(10);
+  nodes[relicNode].type = 'relic';
+
+  const pool = shuffle([
+    ...Array(4).fill('danger'), ...Array(3).fill('food'), ...Array(3).fill('reward'), ...Array(6).fill('normal')
+  ]);
+  const rest = nodes.filter(n => n.id !== 0 && n.id !== relicNode).map(n => n.id);
+  // 캠프 바로 옆 타일엔 위험 타일을 두지 않음
+  rest.filter(i => nodes[0].adj.includes(i)).forEach(i => {
+    const k = pool.findIndex(t => t !== 'danger');
+    nodes[i].type = pool.splice(k, 1)[0];
+  });
+  rest.filter(i => !nodes[0].adj.includes(i)).forEach(i => { nodes[i].type = pool.pop(); });
+
+  nodes.forEach(n => {
+    const [lo, hi] = RISK[n.type];
+    n.risk = lo + rnd(hi - lo + 1);
+    n.hidden = n.id !== 0 && n.type !== 'relic' && Math.random() < .55;
+  });
+
+  const mk = i => ({ name:`플레이어 ${i + 1}`, hp:MAX_HP, food:6, relic:false, shield:0, pos:0, alive:true });
+  G = { mode, nodes, relicNode, players: mode === 2 ? [mk(0), mk(1)] : [mk(0)],
+        cur:0, turn:1, maxTurn:MAX_TURN, phase:'idle', sel:false, curNode:null };
+  $('#maxturn').textContent = MAX_TURN;
+  buildBoard(); renderAll();
+  msg(mode === 2 ? '플레이어 1의 차례입니다. 카드를 한 장 고르세요.' : '카드를 한 장 골라 숲으로 나아가세요.');
+  hideBanner();
+}
+
+/* ---------- 보드 구성 ---------- */
+function buildBoard() {
+  // 길
+  const svg = $('#paths'); let s = '';
+  EDGES.forEach(([a, b], k) => {
+    const A = POS[a], B = POS[b];
+    const mx = (A[0] + B[0]) / 2, my = (A[1] + B[1]) / 2;
+    const off = ((k * 37) % 30) - 15;
+    const d = `M${A[0]},${A[1]} Q${mx},${my + off} ${B[0]},${B[1]}`;
+    s += `<path d="${d}" stroke="#1a0f06" stroke-width="22" fill="none" stroke-linecap="round" opacity=".7"/>`
+       + `<path d="${d}" stroke="#8a6a45" stroke-width="15" fill="none" stroke-linecap="round"/>`
+       + `<path d="${d}" stroke="#b89868" stroke-width="3" fill="none" stroke-dasharray="2 12" stroke-linecap="round"/>`;
+  });
+  svg.innerHTML = s;
+
+  // 타일
+  const tiles = $('#tiles'); tiles.innerHTML = '';
+  G.nodes.forEach(n => {
+    const b = document.createElement('button');
+    b.className = 'tile'; b.dataset.id = n.id;
+    b.style.left = (n.x / 10) + '%'; b.style.top = (n.y / 6) + '%';
+    b.innerHTML = '<div class="rim"></div><div class="face"><span class="ico"></span></div><div class="pips"></div><div class="nm"></div>';
+    b.addEventListener('click', () => onTile(n.id));
+    tiles.appendChild(b);
+  });
+
+  // 말
+  const pw = $('#pawns'); pw.innerHTML = '';
+  G.players.forEach((p, i) => {
+    const el = document.createElement('div');
+    el.className = 'pawn'; el.id = 'pawn' + i;
+    el.innerHTML = '<div class="shadow"></div><div class="hopper"><div class="tilt"><div class="spin"></div></div></div>';
+    el.querySelector('.spin').appendChild(i === 0 ? makeSack('#e8b94a') : makeBranch('#7fd36b'));
+    pw.appendChild(el);
+  });
+  fitBoard();
+}
+
+function fitBoard() {
+  const b = $('#board');
+  b.style.setProperty('--ps', (b.clientWidth / 1000 * 1.6).toFixed(3));
+  if (G) renderPawns(false);
+}
+new ResizeObserver(fitBoard).observe($('#board'));
+
+/* ---------- 3D 말 (CSS 3D 선반 가공 방식) ---------- */
+function disc(r, y, color, top) {
+  const d = document.createElement('div');
+  d.className = 'disc';
+  const dark = `color-mix(in srgb, ${color} 55%, #000)`;
+  d.style.cssText = `width:${2*r}px;height:${2*r}px;margin:${-r}px 0 0 ${-r}px;` +
+    `background:radial-gradient(circle, ${top ? `color-mix(in srgb, ${color} 80%, #fff)` : color} 0%, ${color} 58%, ${dark} 100%);` +
+    `transform:translateY(${-y}px) rotateX(90deg)`;
+  return d;
+}
+// profile: [[y, r, color], ...]
+function lathe(profile, step) {
+  step = step || 1.5;
+  const el = document.createElement('div'); el.className = 'solid';
+  const topY = profile[profile.length - 1][0];
+  for (let y = 0; y <= topY; y += step) {
+    let i = 0; while (i < profile.length - 2 && profile[i + 1][0] < y) i++;
+    const [y0, r0, c0] = profile[i], [y1, r1, c1] = profile[i + 1];
+    const t = y1 === y0 ? 0 : clamp((y - y0) / (y1 - y0), 0, 1);
+    el.appendChild(disc(r0 + (r1 - r0) * t, y, t < .5 ? c0 : c1, false));
+  }
+  const last = profile[profile.length - 1];
+  el.appendChild(disc(last[1], topY + .5, last[2], true));
+  return el;
+}
+function plane(html, cls, x, y, z, ry) {
+  const p = document.createElement('div');
+  p.className = 'plane ' + cls; p.innerHTML = html || '';
+  p.style.transform = `translate3d(${x}px,${-y}px,${z}px) rotateY(${ry || 0}deg)`;
+  return p;
+}
+// 돈가방
+function makeSack(ring) {
+  const root = document.createElement('div'); root.className = 'solid';
+  root.appendChild(lathe([
+    [0, 26, ring], [3, 26, ring], [3.6, 15, '#8a6a3a'], [7, 19, '#a07c47'], [15, 23, '#b8924f'],
+    [23, 20, '#b08a4a'], [30, 12, '#a07c47'], [34, 7, '#7b5a2e'], [37, 7, '#4a2f14'],
+    [39, 12, '#b08a4a'], [46, 14, '#c9a35f']
+  ]));
+  root.appendChild(plane('$', 'coin', 0, 15, 24.5, 0));
+  root.appendChild(plane('$', 'coin', 0, 15, -24.5, 180));
+  root.appendChild(plane('$', 'coin', 24.5, 15, 0, 90));
+  root.appendChild(plane('$', 'coin', -24.5, 15, 0, -90));
+  return root;
+}
+// 나뭇가지(그루터기 + 곁가지 + 잎)
+function makeBranch(ring) {
+  const root = document.createElement('div'); root.className = 'solid';
+  root.appendChild(lathe([
+    [0, 26, ring], [3, 26, ring], [3.6, 13, '#5a3d24'], [10, 11, '#6b4a2a'], [18, 9.5, '#4e3320'],
+    [26, 9, '#6b4a2a'], [34, 8, '#5a3d24'], [40, 8, '#6b4a2a'], [41, 7, '#dcb678'], [42, 7, '#c9a063']
+  ]));
+  // 곁가지
+  const arm = document.createElement('div'); arm.className = 'solid';
+  arm.style.transform = 'translateY(-26px) rotateZ(52deg)';
+  arm.appendChild(lathe([[0, 4.5, '#5a3d24'], [10, 4, '#6b4a2a'], [20, 3, '#4e3320'], [21, 2.8, '#dcb678']]));
+  arm.appendChild(plane('', 'leaf', 0, 22, 0, 0));
+  arm.appendChild(plane('', 'leaf', 0, 24, 0, 90));
+  root.appendChild(arm);
+  // 꼭대기 잎
+  [[0,46,0],[0,46,90],[-5,40,45]].forEach(([x,y,r]) => root.appendChild(plane('', 'leaf', x, y, 0, r)));
+  const arm2 = document.createElement('div'); arm2.className = 'solid';
+  arm2.style.transform = 'translateY(-18px) rotateZ(-48deg)';
+  arm2.appendChild(lathe([[0, 3.6, '#5a3d24'], [12, 3, '#6b4a2a'], [13, 2.8, '#dcb678']]));
+  arm2.appendChild(plane('', 'leaf', 0, 14, 0, 0));
+  arm2.appendChild(plane('', 'leaf', 0, 14, 0, 90));
+  root.appendChild(arm2);
+  return root;
+}
+
+/* ---------- 렌더링 ---------- */
+function renderAll() { renderTiles(); renderPawns(false); renderHUD(); renderCards(); }
+
+function visType(n) { return (n.hidden ? 'unknown' : n.type); }
+
+function renderTiles() {
+  const reach = new Set(G.phase === 'idle' && cur().alive ? G.nodes[cur().pos].adj : []);
+  const carrying = G.players.some(p => p.relic);
+  document.querySelectorAll('.tile').forEach(el => {
+    const n = G.nodes[+el.dataset.id];
+    const vt = visType(n);
+    el.className = 'tile k-' + vt
+      + (n.used && n.id !== 0 ? ' used' : '')
+      + (reach.has(n.id) ? ' reach' + (G.sel ? ' sel' : '') : '')
+      + (n.id === 0 && cur().relic ? ' goal' : '');
+    const ico = n.used && vt !== 'camp' ? USED_ICON[n.type] : ICON[vt];
+    el.querySelector('.ico').textContent = ico;
+    const pips = el.querySelector('.pips');
+    if (n.id === 0 || (n.used && !n.hidden)) pips.innerHTML = '';
+    else pips.innerHTML = [0,1,2].map(i => `<span class="${i < n.risk ? 'f' : 'e'}">●</span>`).join('');
+    el.querySelector('.nm').textContent = n.id === 0 ? 'CAMP' : '';
+    el.title = `${TNAME[vt]}${n.id ? ' · 위험도 ' + n.risk + '/3' : ''}`;
+    el.setAttribute('aria-label', el.title);
+    el.disabled = !reach.has(n.id);
+  });
+  $('#board').classList.toggle('fog', carrying);
+}
+
+function renderPawns(hop, idx) {
+  const same = G.players.length === 2 && G.players[0].pos === G.players[1].pos;
+  const ps = parseFloat(getComputedStyle($('#board')).getPropertyValue('--ps')) || 1;
+  G.players.forEach((p, i) => {
+    const el = $('#pawn' + i), n = G.nodes[p.pos];
+    el.style.left = (n.x / 10) + '%';
+    el.style.top = (n.y / 6 + 1.2) + '%';
+    el.style.marginLeft = (same ? (i ? 1 : -1) * 24 * ps : 0) + 'px';
+    el.style.zIndex = i === G.cur ? 7 : 6;
+    el.classList.toggle('active', i === G.cur && G.phase !== 'over');
+    el.style.opacity = p.alive ? 1 : .3;
+    if (hop && idx === i) { el.classList.remove('hop'); void el.offsetWidth; el.classList.add('hop'); }
+  });
+}
+
+function bar(v, max, cls) {
+  let s = ''; for (let i = 0; i < max; i++) s += `<i class="${i < v ? 'on' : ''}"></i>`;
+  return `<div class="bar ${cls}">${s}</div>`;
+}
+function renderHUD() {
+  $('#players').innerHTML = G.players.map((p, i) => `
+    <div class="pp ${i === G.cur ? 'active' : ''} ${p.alive ? '' : 'dead'}">
+      <div class="who"><span class="tok" style="background:${i ? 'var(--p2)' : 'var(--p1)'}"></span>${G.mode === 1 ? '탐험가' : p.name}${i ? ' 🪵' : ' 🎒'}<em class="turnmark">▶ 현재 차례</em></div>
+      <div class="stat"><span class="ic">❤️</span>${bar(p.hp, MAX_HP, 'hp')}<b>${p.hp}/${MAX_HP}</b></div>
+      <div class="stat"><span class="ic">🍖</span>${bar(p.food, MAX_FOOD, 'fd')}<b>${p.food}/${MAX_FOOD}</b></div>
+      <div class="badges"><span class="${p.relic ? 'on' : ''}">💎 유물 ${p.relic ? '획득!' : '미획득'}</span><span class="sh ${p.shield ? 'on' : ''}">🛡 방어막</span></div>
+    </div>`).join('');
+  $('#turn').textContent = Math.min(G.turn, G.maxTurn);
+  $('#turnbox').classList.toggle('warn', G.maxTurn - G.turn < 4);
+}
+
+const CARDS = [
+  { k:'move',   name:'이동', emoji:'👣', desc:'인접 타일로 1칸 이동', cost:'식량 -1' },
+  { k:'gather', name:'채집', emoji:'🧺', desc:'제자리에서 식량을 모은다', cost:'식량 +2' },
+  { k:'guard',  name:'방어', emoji:'🛡️', desc:'다음 피해를 3 줄인다', cost:'방어막 1회' },
+  { k:'heal',   name:'치유', emoji:'🌿', desc:'상처를 치료한다', cost:'체력 +3 · 식량 -1' }
+];
+function cardDisabled(k) {
+  const p = cur();
+  if (G.phase !== 'idle') return true;
+  if (k === 'gather') return p.food >= MAX_FOOD;
+  if (k === 'guard') return p.shield > 0;
+  if (k === 'heal') return p.hp >= MAX_HP || p.food < 1;
+  return false;
+}
+function renderCards() {
+  $('#cards').innerHTML = CARDS.map((c, i) => `
+    <button class="card ${c.k === 'move' && G.sel ? 'sel' : ''}" data-k="${c.k}" ${cardDisabled(c.k) ? 'disabled' : ''}>
+      <span class="key">${i + 1}</span>
+      <div class="art">${c.emoji}</div>
+      <h3>${c.name}</h3><p>${c.desc}</p><div class="cost">${c.cost}</div>
+    </button>`).join('');
+  document.querySelectorAll('.card').forEach(b => b.addEventListener('click', () => useCard(b.dataset.k)));
+}
+
+function msg(t) { $('#msg').textContent = t; }
+let bannerT = 0;
+function showBanner(text, chips) {
+  const b = $('#banner');
+  b.innerHTML = `<p>${text}</p>` + (chips ? `<div class="chips">${chips}</div>` : '');
+  b.classList.add('show');
+  clearTimeout(bannerT);
+  bannerT = setTimeout(hideBanner, 3600);
+}
+function hideBanner() { $('#banner').classList.remove('show'); }
+
+/* ---------- 게임 흐름 ---------- */
+function useCard(k) {
+  if (!G || G.phase !== 'idle') return;
+  const p = cur();
+  if (cardDisabled(k)) return;
+  if (k === 'move') { G.sel = !G.sel; renderTiles(); renderCards(); msg(G.sel ? '이동할 타일을 선택하세요. (빛나는 타일)' : '이동을 취소했습니다.'); return; }
+  G.sel = false;
+  if (k === 'gather') {
+    p.food = clamp(p.food + 2, 0, MAX_FOOD);
+    showBanner('숲을 뒤져 먹을 것을 모았다.', '<span class="pos">식량 +2</span>');
+  } else if (k === 'guard') {
+    p.shield = 1;
+    showBanner('방어 자세를 취했다. 다음 피해를 줄여 준다.', '<span class="pos">🛡 방어막</span>');
+  } else if (k === 'heal') {
+    p.food -= 1; p.hp = clamp(p.hp + 3, 0, MAX_HP);
+    showBanner('상처에 약초를 바르고 숨을 골랐다.', '<span class="pos">체력 +3</span> · <span class="neg">식량 -1</span>');
+  }
+  endTurn();
+}
+
+function onTile(id) {
+  if (!G || G.phase !== 'idle' || !cur().alive) return;
+  if (!G.nodes[cur().pos].adj.includes(id)) { msg('인접한 타일로만 이동할 수 있습니다.'); return; }
+  doMove(id);
+}
+
+function doMove(id) {
+  const p = cur(); G.sel = false; G.phase = 'busy';
+  const notes = [];
+  if (p.food > 0) { p.food--; notes.push('<span class="neg">식량 -1</span>'); }
+  else { p.hp--; notes.push('<span class="neg">굶주림 체력 -1</span>'); }
+  p.pos = id;
+  renderTiles(); renderCards(); renderHUD(); renderPawns(true, G.cur);
+  hideBanner();
+  setTimeout(() => arrive(p, G.nodes[id], notes), 650);
+}
+
+function arrive(p, node, notes) {
+  if (checkDeath(p)) return;
+  node.hidden = false;
+  renderTiles(); renderHUD();
+
+  // 2인: 유물 든 상대와 같은 타일 → 빼앗기
+  if (G.mode === 2 && node.id !== 0) {
+    const o = other();
+    if (o.relic && o.pos === p.pos) {
+      o.relic = false; p.relic = true;
+      showBanner(`${p.name}이(가) ${o.name}의 유물을 빼앗았다!`, '<span class="pos">💎 유물 강탈!</span>');
+      renderHUD(); renderTiles();
+    }
+  }
+
+  if (node.id === 0) {
+    if (p.relic) return finish(true, p, '유물을 품고 캠프로 무사히 귀환했다!');
+    if (p.hp < MAX_HP) { p.hp++; notes.push('<span class="pos">캠프 휴식 체력 +1</span>'); }
+    showBanner('캠프의 모닥불 곁에서 숨을 돌렸다.', notes.join(' · '));
+    return endTurn();
+  }
+  if (node.type !== 'normal' && !node.used) { return openEvent(node, notes); }
+
+  showBanner(node.used ? '이미 지나간 길이다. 낙엽만 바스락거린다.' : pick(['고요한 숲길이다. 새소리만 들린다.', '이끼 낀 오솔길을 따라 걸었다.', '바람에 나뭇잎이 흩날린다. 아무 일도 없었다.']), notes.join(' · '));
+  endTurn();
+}
+
+function openEvent(node, notes) {
+  if (!node.ev) node.ev = pick(EVENTS[node.type]);
+  const ev = node.ev;
+  G.phase = 'modal'; G.curNode = node; G.pendingNotes = notes || [];
+  $('#martArea').className = 'art-m th-' + ev.theme;
+  let ff = ''; for (let i = 0; i < 7; i++) ff += `<span class="ff" style="left:${8 + rnd(84)}%;top:${15 + rnd(60)}%;animation-delay:${-rnd(50) / 10}s"></span>`;
+  $('#martArea').innerHTML = `<div class="mist"></div><div class="trees"></div><div class="trees b"></div>${ff}<div class="emoji">${ev.emoji}</div>`;
+  $('#mkick').textContent = ({ danger:'⚠ 위험한 사건', reward:'✦ 뜻밖의 발견', food:'🍃 숲의 은혜', relic:'💎 유물의 부름' })[node.type];
+  $('#mtitle').textContent = ev.title;
+  $('#mstory').textContent = ev.story;
+  const p = cur();
+  $('#mopts').innerHTML = ev.opts.map((o, i) => {
+    const poor = o.cost && p.food < o.cost.food;
+    return `<button class="opt" data-i="${i}" ${poor ? 'disabled' : ''}>
+      <span class="n">${i + 1}</span><span class="t">${o.label}<small>${o.hint}${poor ? ' (식량 부족)' : ''}</small></span></button>`;
+  }).join('');
+  document.querySelectorAll('.opt').forEach(b => b.addEventListener('click', () => chooseOpt(+b.dataset.i)));
+  $('#mclose').style.display = ev.required && node.type !== 'relic' ? 'none' : '';
+  $('#mclose').title = node.type === 'relic' ? '물러나기' : '지나치기';
+  $('#mnote').textContent = ev.required && node.type !== 'relic' ? '이 사건은 선택을 해야 넘어갈 수 있습니다.' : '✕ 를 누르면 이 사건을 지나칩니다. (턴은 소모됩니다)';
+  setBlocked(true);
+  $('#modal').classList.remove('hidden');
+  const first = $('.opt:not(:disabled)'); if (first) first.focus();
+}
+
+function setBlocked(b) {
+  $('#mainArea').inert = b; $('#cards').inert = b;
+  $('#mainArea').style.filter = b ? 'brightness(.7)' : '';
+}
+function closeModal() { $('#modal').classList.add('hidden'); setBlocked(false); }
+
+function chooseOpt(i) {
+  if (G.phase !== 'modal') return;
+  const node = G.curNode, ev = node.ev, o = ev.opts[i], p = cur();
+  if (o.cost && p.food < o.cost.food) return;
+  const before = { hp:p.hp, food:p.food, relic:p.relic, shield:p.shield };
+  if (o.cost) p.food -= o.cost.food;
+
+  const c = {
+    hurt(n) { if (p.shield > 0) { const a = Math.min(n, 3); n -= a; p.shield = 0; } p.hp -= Math.max(0, n); },
+    food(n) { p.food = clamp(p.food + n, 0, MAX_FOOD); },
+    heal(n) { p.hp = clamp(p.hp + n, 0, MAX_HP); },
+    shield() { p.shield = 1; },
+    relic() { p.relic = true; },
+    chance(x) { return Math.random() < x; }
+  };
+  const text = o.run(c);
+  node.used = true;
+  if (node.type === 'relic') node.ev = null;
+
+  const chips = [];
+  const dh = p.hp - before.hp, df = p.food - before.food;
+  if (dh) chips.push(`<span class="${dh > 0 ? 'pos' : 'neg'}">체력 ${dh > 0 ? '+' : ''}${dh}</span>`);
+  if (df) chips.push(`<span class="${df > 0 ? 'pos' : 'neg'}">식량 ${df > 0 ? '+' : ''}${df}</span>`);
+  if (p.relic && !before.relic) chips.push('<span class="pos">💎 유물 획득!</span>');
+  if (p.shield && !before.shield) chips.push('<span class="pos">🛡 방어막</span>');
+  if (!p.shield && before.shield) chips.push('<span class="pos">🛡 방어막이 피해를 막았다</span>');
+  const all = [...G.pendingNotes, ...chips].join(' · ');
+
+  closeModal();
+  G.phase = 'busy';
+  showBanner(text + (p.relic && !before.relic ? ' 이제 캠프로 돌아가야 한다!' : ''), all);
+  renderAll();
+  if (p.relic && !before.relic) msg('💎 유물을 얻었다! 빛나는 ⛺캠프로 돌아가세요.');
+  setTimeout(() => { if (!checkDeath(p)) endTurn(); }, 450);
+}
+
+function skipEvent() {
+  if (G.phase !== 'modal') return;
+  const node = G.curNode;
+  if (node.ev.required && node.type !== 'relic') return;
+  closeModal(); G.phase = 'busy';
+  showBanner(node.type === 'relic' ? '유물을 두고 물러났다. 아직 여기 있을 것이다.' : '그냥 지나쳤다.', G.pendingNotes.join(' · '));
+  endTurn();
+}
+
+function checkDeath(p) {
+  if (p.hp > 0) return false;
+  p.hp = 0; p.alive = false; renderAll();
+  if (G.mode === 1) finish(false, p, '체력이 바닥나 숲에 쓰러지고 말았다...');
+  else finish(true, other(), `${p.name}이(가) 쓰러졌다. ${other().name}의 승리!`);
+  return true;
+}
+
+function endTurn() {
+  G.phase = 'busy'; G.sel = false;
+  if (G.mode === 1) G.turn++;
+  else { G.cur = 1 - G.cur; if (G.cur === 0) G.turn++; }
+  if (G.turn > G.maxTurn) { return timeUp(); }
+  renderAll();
+  msg(G.mode === 2 ? `${cur().name}의 차례입니다.` : (G.turn >= G.maxTurn - 3 ? '⏳ 해가 저문다... 서둘러야 한다!' : '다음 행동을 고르세요.'));
+  setTimeout(() => { if (G.phase === 'busy') { G.phase = 'idle'; renderAll(); } }, 500);
+}
+
+function timeUp() {
+  if (G.mode === 1) return finish(false, cur(), '밤이 되었다. 제한 턴 안에 캠프로 돌아오지 못했다...');
+  const [a, b] = G.players;
+  let w, why;
+  if (a.relic !== b.relic) { w = a.relic ? a : b; why = '제한 턴 종료. 유물을 가진 쪽이 승리합니다.'; }
+  else if (a.hp + a.food !== b.hp + b.food) { w = a.hp + a.food > b.hp + b.food ? a : b; why = '제한 턴 종료. 체력+식량이 더 많은 쪽이 승리합니다.'; }
+  else { w = b; why = '제한 턴 종료. 모든 조건이 같아 후공 플레이어가 승리합니다.'; }
+  finish(true, w, why);
+}
+
+function finish(win, p, text) {
+  G.phase = 'over'; G.sel = false;
+  renderAll();
+  const r = $('#result');
+  r.className = 'backdrop ' + (win ? 'win' : 'lose');
+  if (G.mode === 1) {
+    $('#rem').textContent = win ? '🏆' : '💀';
+    $('#rtitle').textContent = win ? '승리!' : '패배';
+  } else {
+    $('#rem').textContent = '🏆';
+    $('#rtitle').textContent = `${p.name} 승리!`;
+  }
+  $('#rtext').textContent = text + ` (${Math.min(G.turn, G.maxTurn)}턴)`;
+  setTimeout(() => r.classList.remove('hidden'), 700);
+}
+
+/* ---------- 입력 ---------- */
+$('#mclose').addEventListener('click', skipEvent);
+$('#btn1').addEventListener('click', () => startMode(1));
+$('#btn2').addEventListener('click', () => startMode(2));
+$('#btnResume').addEventListener('click', () => $('#menu').classList.add('hidden'));
+$('#again').addEventListener('click', () => { $('#result').classList.add('hidden'); startMode(G.mode); });
+$('#toMenu').addEventListener('click', () => { $('#result').classList.add('hidden'); $('#btnResume').style.display = 'none'; $('#menu').classList.remove('hidden'); });
+$('#menuBtn').addEventListener('click', () => {
+  if (G.phase === 'modal') return;
+  $('#btnResume').style.display = G.phase === 'over' ? 'none' : '';
+  $('#menu').classList.remove('hidden');
+});
+function startMode(m) {
+  $('#menu').classList.add('hidden');
+  closeModal();
+  newGame(m);
+  setTimeout(() => { if (G.phase === 'idle') renderAll(); }, 0);
+}
+document.addEventListener('keydown', e => {
+  if (!G) return;
+  if (!$('#menu').classList.contains('hidden') || !$('#result').classList.contains('hidden')) return;
+  if (G.phase === 'modal') {
+    if (e.key >= '1' && e.key <= '3') { const b = document.querySelector(`.opt[data-i="${+e.key - 1}"]`); if (b && !b.disabled) b.click(); }
+    else if (e.key === 'Escape') skipEvent();
+    return;
+  }
+  const idx = '1234'.indexOf(e.key);
+  if (idx >= 0) useCard(CARDS[idx].k);
+});
+
+/* ---------- 시작 ---------- */
+newGame(1);
+</script>
+</body>
+</html>
