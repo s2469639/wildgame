@@ -6,254 +6,402 @@
 <title>WILDERPATH — 잊힌 숲</title>
 <style>
 :root{
-  --bg:#0b160f; --moss:#1d3623; --leaf:#34603a; --bark:#5a3d24; --dirt:#8a6a45;
-  --parch:#ecdcb2; --parch2:#cdb98a; --gold:#e8b94a; --red:#c8493a; --ink:#2a1d10;
-  --p1:#e8b94a; --p2:#7fd36b;
-  --bw:min(96vw, calc((100dvh - 372px) * 1.6667), 1100px);
-  --tile:calc(var(--bw) * .092);
+  --ink:#2e2010; --ink2:#4a3418; --brass:#c79a3b; --brass2:#8a6420; --leather:#1d140c; --leather2:#2c1f12;
+  --parch:#ecdcb0; --parch2:#d9c28c; --parch3:#bfa56e; --rust:#a8452f; --moss:#5f7d3a; --violet:#6a58a6;
+  --p1:#d9a441; --p2:#3fa58b;
+  --serif:"Nanum Myeongjo","Noto Serif KR","Batang","Palatino Linotype","Georgia",serif;
+  --bw:min(calc(100vw - 20px), calc((100dvh - 206px) * 1.6667), 1500px);
+  --tile:calc(var(--bw) * .1);
+  --noise:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .3 0 0 0 0 .2 0 0 0 0 .08 0 0 0 .28 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
 body{
   background:
-    radial-gradient(ellipse at 50% -10%, #25452c 0%, transparent 55%),
-    radial-gradient(ellipse at 50% 120%, #1a2a14 0%, transparent 50%),
-    linear-gradient(#0b160f,#08110c);
-  color:var(--parch);
-  font-family:"Noto Serif KR","Nanum Myeongjo","Malgun Gothic","Apple SD Gothic Neo",serif;
+    var(--noise),
+    radial-gradient(ellipse at 50% 0%, #34402a 0%, transparent 60%),
+    linear-gradient(#17120b,#0e0c08);
+  color:var(--parch); font-family:var(--serif);
   min-height:100dvh; display:flex; flex-direction:column; align-items:center;
   user-select:none; -webkit-user-select:none; overflow-x:hidden;
 }
 button{font-family:inherit;cursor:pointer;color:inherit}
 button:disabled{cursor:not-allowed}
+.ic{width:1em;height:1em;fill:none;stroke:currentColor;stroke-width:3.4;stroke-linecap:round;stroke-linejoin:round;overflow:visible;display:block}
+.k{fill:currentColor}
+.w{fill:var(--wash,transparent)}
 
 /* ---------- HUD ---------- */
 #hud{
-  width:min(1100px,98vw); margin-top:8px; padding:8px 12px;
-  display:flex; align-items:stretch; gap:10px; flex-wrap:wrap; justify-content:center;
-  background:linear-gradient(#3a2916,#2a1d10); border:2px solid #1a110a; border-radius:12px;
-  box-shadow:0 6px 18px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.12);
+  width:min(1500px,calc(100vw - 20px)); margin:8px 0 0; padding:6px 12px;
+  display:flex; align-items:stretch; gap:10px;
+  background:linear-gradient(#33241a,#1d140c); border:2px solid #0c0804; border-radius:10px;
+  box-shadow:0 0 0 1px var(--brass2), 0 6px 16px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,220,150,.15);
 }
-.brand{display:flex;flex-direction:column;justify-content:center;min-width:120px}
-.brand b{font-size:18px;letter-spacing:.14em;color:var(--gold);text-shadow:0 2px 0 #000}
-.brand small{font-size:11px;color:var(--parch2);letter-spacing:.3em}
-#players{display:flex;gap:10px;flex:1;min-width:260px;justify-content:center;flex-wrap:wrap}
+.brand{display:flex;flex-direction:column;justify-content:center;min-width:112px;padding-right:12px;border-right:1px solid #ffffff22}
+.brand b{font-size:16px;letter-spacing:.18em;color:var(--brass);text-shadow:0 1px 0 #000}
+.brand small{font-size:10px;color:var(--parch3);letter-spacing:.5em}
+#players{display:flex;gap:10px;flex:1;justify-content:center;min-width:0}
 .pp{
-  flex:1;min-width:220px;max-width:340px;padding:6px 10px;border-radius:9px;
-  background:rgba(0,0,0,.28);border:2px solid transparent;transition:.25s;opacity:.65;
+  flex:1;max-width:430px;min-width:0;padding:4px 10px;border-radius:8px;display:grid;grid-template-columns:auto 1fr auto;column-gap:10px;align-items:center;
+  background:rgba(0,0,0,.25);border:1px solid #ffffff14;transition:.25s;opacity:.6;
 }
-.pp.active{opacity:1;border-color:var(--gold);box-shadow:0 0 14px rgba(232,185,74,.45);background:rgba(232,185,74,.08)}
-.pp.dead{filter:grayscale(1);opacity:.4}
-.pp .who{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;margin-bottom:3px}
-.pp .tok{width:12px;height:12px;border-radius:50%;border:2px solid #000;display:inline-block}
-.pp .turnmark{margin-left:auto;font-size:11px;color:var(--gold);font-weight:400;font-style:normal;visibility:hidden}
+.pp.active{opacity:1;border-color:var(--brass);box-shadow:0 0 12px rgba(199,154,59,.4), inset 0 0 12px rgba(199,154,59,.1)}
+.pp.dead{filter:grayscale(1);opacity:.35}
+.who{display:flex;flex-direction:column;gap:1px;min-width:72px}
+.who .nm{font-size:13px;font-weight:800;display:flex;align-items:center;gap:6px;white-space:nowrap}
+.who .tok{width:11px;height:11px;border-radius:50%;border:2px solid #000;display:inline-block}
+.who .sb{font-size:10.5px;color:var(--parch3)}
+.who .turnmark{font-size:10.5px;color:var(--brass);visibility:hidden;font-weight:700}
 .pp.active .turnmark{visibility:visible}
-.stat{display:flex;align-items:center;gap:6px;font-size:12px;margin:2px 0}
-.stat .ic{width:18px;text-align:center}
-.bar{flex:1;height:11px;display:flex;gap:2px;background:#0006;padding:1px;border-radius:4px}
-.bar i{flex:1;border-radius:2px;background:#0005}
-.bar.hp i.on{background:linear-gradient(#ff7a6a,#c8493a)}
-.bar.fd i.on{background:linear-gradient(#ffc766,#d98c24)}
-.stat b{width:38px;text-align:right;font-variant-numeric:tabular-nums}
-.badges{display:flex;gap:6px;margin-top:3px;font-size:11px}
-.badges span{padding:1px 7px;border-radius:10px;background:#0006;color:#8a7d60;border:1px solid #0000}
-.badges span.on{background:rgba(120,90,255,.25);color:#e1d4ff;border-color:#9b7bff;box-shadow:0 0 8px #7a5cff88}
-.badges span.sh.on{background:rgba(90,170,255,.2);color:#cfe8ff;border-color:#6fb4ff;box-shadow:0 0 8px #4a9cff88}
-.turnbox{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 12px;
-  background:rgba(0,0,0,.3);border-radius:9px;min-width:84px}
-.turnbox small{font-size:10px;color:var(--parch2);letter-spacing:.2em}
-.turnbox div{font-size:22px;font-weight:700;color:var(--gold)}
-.turnbox div span{font-size:13px;color:var(--parch2)}
-.turnbox.warn div{color:#ff8a6a;animation:blink 1s infinite}
-@keyframes blink{50%{opacity:.5}}
-#menuBtn{background:#00000040;border:1px solid #0008;border-radius:8px;padding:0 12px;font-size:12px;color:var(--parch2)}
-#menuBtn:hover{background:#0007}
+.meters{display:flex;flex-direction:column;gap:4px;min-width:0}
+.meter{display:flex;align-items:center;gap:6px;font-size:12px}
+.meter .ic{font-size:15px;flex:0 0 auto}
+.meter.hp .ic{color:#d9604a}.meter.fd .ic{color:#e0a23c}
+.track{flex:1;height:10px;background:#00000066;border-radius:6px;border:1px solid #000;overflow:hidden;position:relative}
+.track i{display:block;height:100%;transition:width .4s}
+.hp .track i{background:linear-gradient(#e87a62,#a8392b)}
+.fd .track i{background:linear-gradient(#f0bb5a,#b9772a)}
+.meter b{min-width:42px;text-align:right;font-variant-numeric:tabular-nums;font-size:12px}
+.slots{display:flex;gap:6px}
+.slot{width:34px;height:34px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:#0006;border:1.5px dashed #ffffff30;color:#ffffff40;font-size:19px;position:relative}
+.slot small{position:absolute;bottom:-12px;font-size:9px;color:var(--parch3);white-space:nowrap}
+.slot.on{border:1.5px solid var(--brass);border-style:solid;background:radial-gradient(#3b2d58,#1b1330);color:#d6c8ff;box-shadow:0 0 10px #8f78ff99}
+.slot.sh.on{background:radial-gradient(#25455e,#102232);color:#c6e6ff;box-shadow:0 0 10px #5aaeff88}
+.turnbox{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 14px;min-width:92px;
+  background:rgba(0,0,0,.3);border-radius:8px;border:1px solid #ffffff14}
+.turnbox small{font-size:9.5px;color:var(--parch3);letter-spacing:.3em}
+.turnbox .n{font-size:22px;font-weight:800;color:var(--brass);line-height:1.1}
+.turnbox .n span{font-size:12px;color:var(--parch3);font-weight:400}
+.turnbox .tb{width:100%;height:4px;background:#0008;border-radius:3px;margin-top:3px;overflow:hidden}
+.turnbox .tb i{display:block;height:100%;background:var(--brass);transition:width .4s}
+.turnbox.warn .n{color:#ff8a6a;animation:blink 1s infinite}
+.turnbox.warn .tb i{background:#e5563a}
+@keyframes blink{50%{opacity:.55}}
+#menuBtn{background:linear-gradient(#4a3722,#2a1d10);border:1px solid var(--brass2);border-radius:8px;padding:0 14px;font-size:13px;color:var(--parch)}
+#menuBtn:hover{filter:brightness(1.25)}
 
-/* ---------- Board ---------- */
-main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;padding:8px 0 2px}
+/* ---------- Board (old map) ---------- */
+main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;padding:8px 0 4px}
 #board{
   position:relative;width:var(--bw);aspect-ratio:1000/600;
-  border:clamp(6px,1.1vw,12px) solid #4a3019;border-radius:16px;
+  border:clamp(8px,1.3vw,16px) solid #3a2412; border-radius:12px;
   background:
-    radial-gradient(circle at 20% 30%, rgba(255,255,255,.05) 0 2px, transparent 3px) 0 0/38px 38px,
-    radial-gradient(circle at 70% 70%, rgba(0,0,0,.18) 0 2px, transparent 3px) 0 0/26px 26px,
-    radial-gradient(ellipse at 15% 50%, #3c5f2c 0%, transparent 40%),
-    radial-gradient(ellipse at 85% 30%, #1d3a2a 0%, transparent 50%),
-    linear-gradient(135deg,#2a4a2c,#1a3320 55%,#223d26);
-  box-shadow:0 0 0 3px #2a1a0c, 0 14px 40px rgba(0,0,0,.65), inset 0 0 70px rgba(0,0,0,.65);
+    var(--noise),
+    radial-gradient(ellipse at 18% 28%, rgba(120,80,30,.22), transparent 38%),
+    radial-gradient(ellipse at 78% 72%, rgba(100,60,20,.22), transparent 42%),
+    radial-gradient(ellipse at 55% 45%, rgba(255,240,200,.35), transparent 70%),
+    linear-gradient(135deg,#d6bd86,#c4a96e 55%,#cfb67c);
+  box-shadow:
+    0 0 0 2px var(--brass2), 0 0 0 5px #160d06, 0 24px 50px rgba(0,0,0,.7),
+    inset 0 0 90px 24px rgba(70,35,10,.6), inset 0 0 0 2px rgba(60,35,10,.5);
 }
-#board.fog::after{content:"";position:absolute;inset:0;border-radius:6px;pointer-events:none;
-  background:radial-gradient(ellipse at 100% 50%, rgba(80,40,160,.28), transparent 55%)}
+#board::before{content:"";position:absolute;inset:7px;border:2px solid rgba(60,38,14,.65);border-radius:4px;pointer-events:none;
+  box-shadow:inset 0 0 0 4px rgba(236,220,176,.15), inset 0 0 0 5px rgba(60,38,14,.5)}
+#board.fog::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse at 100% 50%, rgba(90,60,150,.22), transparent 55%)}
 #paths{position:absolute;inset:0;width:100%;height:100%}
 #tiles,#pawns{position:absolute;inset:0}
 #pawns{pointer-events:none}
 
 .tile{
   position:absolute;width:var(--tile);height:calc(var(--tile) * .92);transform:translate(-50%,-50%);
-  filter:drop-shadow(0 4px 3px rgba(0,0,0,.65));background:none;border:0;padding:0;transition:transform .2s;
+  filter:drop-shadow(0 3px 2px rgba(40,20,5,.65));background:none;border:0;padding:0;transition:transform .2s;
+  --ink-t:#2e2010;
 }
-.tile .face,.tile .rim{position:absolute;clip-path:polygon(25% 3%,75% 3%,100% 50%,75% 97%,25% 97%,0 50%)}
-.tile .rim{inset:0;background:#20140a}
-.tile .face{inset:5%;display:flex;align-items:center;justify-content:center;
-  background:radial-gradient(circle at 35% 28%, var(--f1), var(--f2) 75%)}
-.tile .ico{font-size:calc(var(--tile) * .42);filter:drop-shadow(0 2px 1px #0008)}
-.tile .pips{position:absolute;left:0;right:0;bottom:-3%;text-align:center;font-size:calc(var(--tile) * .17);letter-spacing:1px;line-height:1}
-.pips .f{color:#ff6a50;text-shadow:0 0 4px #f00}
-.pips .e{color:#0008}
-.tile .nm{position:absolute;top:100%;left:50%;transform:translateX(-50%);font-size:calc(var(--tile) * .15);
-  white-space:nowrap;color:var(--parch);text-shadow:0 1px 2px #000;opacity:.85}
-.k-camp{--f1:#a3774a;--f2:#5f3d20}
-.k-normal{--f1:#58804a;--f2:#2f5232}
-.k-food{--f1:#9cc04a;--f2:#4b7a25}
-.k-danger{--f1:#a64a3a;--f2:#4d1a1a}
-.k-reward{--f1:#e0b44a;--f2:#7a5a1d}
-.k-relic{--f1:#9d7bff;--f2:#3c1f78}
-.k-unknown{--f1:#4b5a52;--f2:#1d2622}
-.tile.used .face{filter:saturate(.35) brightness(.7)}
-.tile.used .ico{opacity:.6}
+.tile .face,.tile .rim,.tile .edge{position:absolute;clip-path:polygon(25% 3%,75% 3%,100% 50%,75% 97%,25% 97%,0 50%)}
+.tile .rim{inset:0;background:#2a1a0a}
+.tile .edge{inset:4%;background:rgba(255,235,190,.55)}
+.tile .face{inset:6.5%;display:flex;align-items:center;justify-content:center;color:var(--ink-t);
+  background:
+    var(--noise),
+    radial-gradient(circle at 35% 25%, var(--f1), var(--f2) 85%)}
+.tile .face .ic{width:48%;height:48%;margin-top:-6%;stroke-width:3.2;--wash:var(--w)}
+.tile .pips{position:absolute;left:0;right:0;bottom:12%;display:flex;justify-content:center;gap:calc(var(--tile)*.035)}
+.pip{width:calc(var(--tile)*.082);height:calc(var(--tile)*.082);border-radius:50%;border:1.5px solid var(--ink-t);background:transparent}
+.pip.f{background:#b3261a;box-shadow:0 0 4px #ff3a20aa}
+.tile .nm{position:absolute;top:104%;left:50%;transform:translateX(-50%);font-size:calc(var(--tile) * .15);font-weight:800;
+  white-space:nowrap;color:#3a2610;letter-spacing:.06em;text-shadow:0 1px 0 rgba(255,240,200,.6)}
+.k-camp{--f1:#c79a64;--f2:#8c6234;--w:rgba(255,236,190,.55)}
+.k-normal{--f1:#a5b982;--f2:#72905a;--w:rgba(60,100,40,.35)}
+.k-food{--f1:#cbd070;--f2:#8fa240;--w:rgba(190,60,40,.45)}
+.k-danger{--f1:#c9705a;--f2:#8c3626;--w:rgba(255,230,200,.5)}
+.k-reward{--f1:#e3b857;--f2:#b3832a;--w:rgba(255,240,190,.6)}
+.k-relic{--f1:#a594dc;--f2:#5f4d9c;--w:rgba(255,255,255,.55);--ink-t:#1f1538}
+.k-unknown{--f1:#8f8a76;--f2:#5d5a4a;--w:transparent;--ink-t:#241c10}
+.tile.used .face{filter:saturate(.3) brightness(.78)}
+.tile.used .face .ic{opacity:.55}
 .tile.reach{cursor:pointer;animation:pulse 1.2s ease-in-out infinite}
-.tile.reach .rim{background:#e8b94a}
-.tile.reach.sel .rim{background:#fff3b0;box-shadow:0 0 0 2px #fff}
+.tile.reach .rim{background:#f3c44d;box-shadow:0 0 0 2px #fff7c8}
+.tile.reach.sel .rim{background:#fff2a8}
 .tile.reach:hover{transform:translate(-50%,-50%) scale(1.12);animation:none;z-index:5}
-.tile.goal .rim{background:#8ff;animation:goal 1s ease-in-out infinite alternate}
+.tile.goal .rim{background:#8fe3f0;animation:goal 1s ease-in-out infinite alternate}
 .tile.k-relic:not(.used) .face{animation:relicGlow 1.8s ease-in-out infinite alternate}
-@keyframes pulse{50%{transform:translate(-50%,-50%) scale(1.06)}}
+@keyframes pulse{50%{transform:translate(-50%,-50%) scale(1.07)}}
 @keyframes goal{to{background:#fff}}
-@keyframes relicGlow{to{filter:brightness(1.4) drop-shadow(0 0 6px #b79bff)}}
+@keyframes relicGlow{to{filter:brightness(1.3) drop-shadow(0 0 5px #b79bff)}}
 .tile:focus-visible{outline:none}
 .tile:focus-visible .rim{background:#fff}
 
-#legend{position:absolute;left:1.5%;bottom:2%;display:flex;gap:calc(var(--bw)*.012);flex-wrap:wrap;
-  background:rgba(10,18,12,.7);padding:4px 9px;border-radius:8px;font-size:clamp(9px,calc(var(--bw)*.0125),12px);
-  color:var(--parch2);pointer-events:none}
-#legend span{white-space:nowrap}
-#banner{position:absolute;left:50%;top:3%;transform:translate(-50%,-14px);opacity:0;pointer-events:none;
-  background:rgba(15,10,5,.92);border:2px solid var(--gold);border-radius:12px;padding:8px 18px;text-align:center;
-  max-width:80%;z-index:20;transition:.35s;box-shadow:0 8px 24px #000a}
+#legend{position:absolute;left:2.2%;bottom:3.5%;display:flex;flex-direction:column;gap:3px;z-index:2;
+  background:rgba(236,220,176,.55);border:1.5px solid rgba(60,38,14,.7);padding:6px 9px;border-radius:4px;
+  font-size:clamp(9px,calc(var(--bw)*.0115),12px);color:#3a2610;pointer-events:none;box-shadow:0 1px 3px #0005}
+#legend h4{font-size:1.05em;letter-spacing:.3em;border-bottom:1px solid rgba(60,38,14,.5);margin-bottom:2px;padding-bottom:2px;text-align:center}
+#legend span{display:flex;align-items:center;gap:5px;white-space:nowrap}
+#legend .ic{font-size:1.5em;color:#2e2010;--wash:rgba(120,90,40,.25);stroke-width:4}
+
+#banner{position:absolute;left:50%;top:4%;transform:translate(-50%,-14px);opacity:0;pointer-events:none;
+  background:linear-gradient(#f4e6bb,#dcc489);color:var(--ink);border:2px solid #3a2412;border-radius:6px;padding:8px 22px;text-align:center;
+  max-width:70%;z-index:20;transition:.35s;box-shadow:0 0 0 2px var(--brass2),0 10px 26px #000a}
 #banner.show{opacity:1;transform:translate(-50%,0)}
-#banner p{font-size:clamp(11px,1.5vw,15px);line-height:1.45}
-#banner .chips{margin-top:3px;font-size:clamp(11px,1.4vw,14px);font-weight:700;color:var(--gold)}
-#banner .neg{color:#ff8a78}.pos{color:#8fe08a}
-#msg{width:var(--bw);min-height:24px;text-align:center;font-size:14px;color:var(--parch2);padding:6px 4px 0}
+#banner p{font-size:clamp(12px,1.5vw,16px);line-height:1.5;font-weight:700}
+#banner .chips{margin-top:3px;font-size:clamp(11px,1.35vw,14px);font-weight:800}
+#banner .neg{color:#a8301f}#banner .pos{color:#2e6a2a}
+#msg{position:absolute;left:50%;bottom:2.4%;transform:translateX(-50%);z-index:3;min-height:24px;max-width:56%;text-align:center;
+  font-size:clamp(11px,1.3vw,14px);color:var(--ink);padding:4px 18px;font-weight:700;
+  background:rgba(236,220,176,.78);border:1.5px solid rgba(60,38,14,.7);border-radius:4px;pointer-events:none}
 
 /* ---------- Pawns (3D) ---------- */
-.pawn{position:absolute;width:0;height:0;perspective:700px;transition:left .55s cubic-bezier(.4,.1,.3,1),top .55s cubic-bezier(.4,.1,.3,1);z-index:6}
-.pawn .shadow{position:absolute;left:0;top:0;width:54px;height:20px;margin:-8px 0 0 -27px;border-radius:50%;
-  background:radial-gradient(#000c,#0000 70%);transform:scale(var(--ps,1))}
+.pawn{position:absolute;width:0;height:0;perspective:700px;transition:left .55s cubic-bezier(.4,.1,.3,1),top .55s cubic-bezier(.4,.1,.3,1),margin .3s;z-index:6}
+.pawn .shadow{position:absolute;left:0;top:0;width:60px;height:22px;margin:-9px 0 0 -30px;border-radius:50%;
+  background:radial-gradient(rgba(30,12,0,.75),#0000 70%);transform:scale(var(--ps,1))}
 .hopper,.tilt,.spin,.solid{transform-style:preserve-3d;position:absolute;left:0;top:0}
 .pawn.active .hopper{animation:bob 1.3s ease-in-out infinite}
 .pawn.hop .hopper{animation:hop .55s ease-in-out}
 @keyframes bob{50%{transform:translateY(-6px)}}
-@keyframes hop{0%{transform:translateY(0)}45%{transform:translateY(-34px)}100%{transform:translateY(0)}}
+@keyframes hop{0%{transform:translateY(0)}45%{transform:translateY(-38px)}100%{transform:translateY(0)}}
 .tilt{transform:scale(var(--ps,1)) rotateX(-30deg)}
 .spin{animation:spin 9s linear infinite}
 @keyframes spin{to{transform:rotateY(360deg)}}
-.disc{position:absolute;left:0;top:0;border-radius:50%;backface-visibility:visible}
+.disc{position:absolute;left:0;top:0;border-radius:50%}
 .plane{position:absolute;left:0;top:0}
-.coin{width:17px;height:17px;margin:-8px 0 0 -8px;border-radius:50%;border:2px solid #8a5d0c;
-  background:radial-gradient(circle at 35% 30%,#fff3a0,#e8b020 60%,#b57b10);display:flex;align-items:center;justify-content:center;
-  font:700 11px/1 Georgia,serif;color:#7a4d05}
-.leaf{width:15px;height:8px;margin:-4px 0 0 -7px;background:linear-gradient(#7fd36b,#2f7a3a);border-radius:100% 0 100% 0;border:1px solid #1d4d25}
+.feather{width:7px;height:20px;margin:-10px 0 0 -3.5px;background:linear-gradient(#f6eed6,#d8c9a0);border-radius:50% 50% 50% 50%/70% 70% 30% 30%;border:1px solid #8a7a52}
+.bar3{width:2.6px;height:25px;margin:-12.5px 0 0 -1.3px;background:#2b2622}
+.flame{width:10px;height:17px;margin:-8.5px 0 0 -5px;border-radius:50% 50% 50% 50%/65% 65% 35% 35%;
+  background:radial-gradient(ellipse at 50% 75%,#fffbe0 0 25%,#ffc94a 50%,#ff7a1a 85%);filter:drop-shadow(0 0 7px #ffb347);animation:flick .5s ease-in-out infinite alternate}
+@keyframes flick{to{transform:scaleY(1.18) scaleX(.9)}}
+.hring{width:17px;height:17px;margin:-8.5px 0 0 -8.5px;border-radius:50%;border:2.6px solid #3a332c}
+.cring{width:12px;height:13px;margin:-6.5px 0 0 -6px;border-radius:50%;border:3px solid #c9a03c}
+.needle{position:absolute;left:0;top:0;width:5.5px;height:31px;margin:-15.5px 0 0 -2.75px;
+  background:linear-gradient(#c8392b 50%,#f3ead0 50%);clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%);animation:ndl 3.4s ease-in-out infinite alternate}
+@keyframes ndl{from{transform:rotate(-38deg)}to{transform:rotate(52deg)}}
+.tick{position:absolute;left:0;top:0;width:2.4px;height:5px;margin:-2.5px 0 0 -1.2px;background:#3a2c18}
 
 /* ---------- Cards ---------- */
-#cards{display:flex;gap:clamp(6px,1.4vw,16px);justify-content:center;padding:6px 8px 12px;width:100%}
+#cards{display:flex;gap:clamp(6px,1.2vw,14px);justify-content:center;padding:4px 8px 10px;width:min(1100px,100vw)}
 .card{
-  width:clamp(74px,21vw,176px);aspect-ratio:3/4.1;max-height:176px;position:relative;
-  background:linear-gradient(160deg,#f0e2b8,#cdb47f);color:var(--ink);
-  border:3px solid #5a3d24;border-radius:12px;padding:6px 6px 8px;display:flex;flex-direction:column;align-items:center;
-  box-shadow:0 6px 12px rgba(0,0,0,.55), inset 0 0 0 2px rgba(255,255,255,.35);
-  transition:transform .18s, box-shadow .18s;font-size:clamp(9px,1.25vw,13px);text-align:center;
+  flex:1;max-width:262px;height:88px;position:relative;display:flex;align-items:center;gap:10px;padding:8px 12px 8px 10px;
+  background:var(--noise),linear-gradient(160deg,#efdfb0,#cfb67c);color:var(--ink);text-align:left;
+  border:2px solid #3a2412;border-radius:8px;
+  box-shadow:0 0 0 1.5px var(--brass2), 0 6px 12px rgba(0,0,0,.55), inset 0 0 18px rgba(110,70,20,.35);
+  transition:transform .18s, box-shadow .18s;
 }
-.card:hover:not(:disabled){transform:translateY(-10px) rotate(-1deg);box-shadow:0 14px 20px rgba(0,0,0,.6)}
-.card.sel{transform:translateY(-16px);box-shadow:0 0 0 3px var(--gold),0 0 22px var(--gold)}
-.card:disabled{filter:grayscale(.85) brightness(.6)}
-.card .key{position:absolute;top:3px;left:6px;font-size:10px;opacity:.55}
-.card .art{flex:1;display:flex;align-items:center;justify-content:center;width:100%;font-size:clamp(26px,5.4vw,52px);
-  background:radial-gradient(circle,rgba(255,255,255,.5),transparent 70%);filter:drop-shadow(0 3px 2px #0005)}
-.card h3{font-size:clamp(12px,1.7vw,17px);letter-spacing:.2em;margin-bottom:2px;color:#3b2512}
-.card p{line-height:1.25;opacity:.85}
-.card .cost{margin-top:3px;font-size:10px;font-weight:700;color:#7a2f1c}
+.card:hover:not(:disabled){transform:translateY(-8px);box-shadow:0 0 0 1.5px var(--brass), 0 14px 18px rgba(0,0,0,.6), inset 0 0 18px rgba(110,70,20,.3)}
+.card.sel{transform:translateY(-12px);box-shadow:0 0 0 3px #f3c44d,0 0 22px #f3c44d,inset 0 0 18px rgba(110,70,20,.3)}
+.card:disabled{filter:grayscale(.9) brightness(.55)}
+.card .key{position:absolute;top:2px;right:7px;font-size:10px;opacity:.5;font-weight:800}
+.card .med{flex:0 0 52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:34px;
+  background:radial-gradient(circle at 35% 30%,#f7eccb,#d0b57a);border:2.5px solid #3a2412;box-shadow:inset 0 0 0 2px var(--brass),0 2px 3px #0006;color:var(--ink);--wash:rgba(130,90,40,.28)}
+.card .tx{min-width:0}
+.card h3{font-size:clamp(14px,1.5vw,17px);letter-spacing:.28em;color:#2a1608}
+.card p{font-size:clamp(10px,1.05vw,12px);line-height:1.3;color:#4a3418;margin:1px 0 2px}
+.card .cost{display:inline-block;font-size:10px;font-weight:800;color:#6a2a18;border-top:1px solid rgba(60,38,14,.4);padding-top:1px}
 
 /* ---------- Overlays / modal ---------- */
 .backdrop{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:14px;
-  background:rgba(4,8,5,.72);backdrop-filter:blur(2px);animation:fade .25s}
+  background:rgba(10,6,2,.76);backdrop-filter:blur(2px);animation:fade .25s;overflow:auto}
 .backdrop.hidden{display:none}
 @keyframes fade{from{opacity:0}}
-.mcard{
-  width:min(560px,100%);max-height:96dvh;overflow:auto;position:relative;
-  background:linear-gradient(#f0e2b8,#d6bf8c);color:var(--ink);border:4px solid #4a3019;border-radius:16px;
-  box-shadow:0 20px 60px #000, inset 0 0 0 2px #fff5;animation:pop .3s cubic-bezier(.2,1.3,.4,1);
+.sheet{
+  width:min(580px,100%);max-height:96dvh;overflow:auto;position:relative;color:var(--ink);
+  background:var(--noise),radial-gradient(ellipse at 50% 40%,#f4e6bb,#d6bc82);
+  border:3px solid #3a2412;border-radius:6px;
+  box-shadow:0 0 0 2px var(--brass2),0 0 0 6px #160d06,0 24px 60px #000,inset 0 0 60px rgba(100,60,20,.5);
+  animation:pop .3s cubic-bezier(.2,1.3,.4,1);
 }
-@keyframes pop{from{transform:scale(.88) translateY(20px);opacity:0}}
-.mclose{position:absolute;right:8px;top:8px;z-index:3;width:32px;height:32px;border-radius:50%;border:2px solid #fff8;
-  background:#000a;color:#fff;font-size:16px}
-.mclose:hover{background:#000}
-.art-m{position:relative;height:clamp(120px,24dvh,190px);overflow:hidden;border-radius:12px 12px 0 0;border-bottom:4px solid #4a3019;
-  background:var(--sky)}
-.art-m .mist{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 70%,var(--glow),transparent 65%)}
-.art-m .trees{position:absolute;left:0;right:0;bottom:0;height:70%;background:#0b1d10;
-  clip-path:polygon(0 100%,0 55%,4% 20%,8% 55%,11% 35%,15% 65%,19% 10%,24% 60%,28% 30%,33% 70%,38% 15%,43% 60%,47% 40%,52% 70%,57% 20%,62% 60%,66% 30%,71% 65%,76% 12%,81% 58%,85% 33%,90% 62%,94% 22%,98% 55%,100% 40%,100% 100%)}
-.art-m .trees.b{height:48%;background:#06120a;opacity:.95;
-  clip-path:polygon(0 100%,0 40%,6% 15%,12% 50%,18% 20%,25% 55%,31% 18%,38% 50%,45% 25%,52% 55%,60% 18%,67% 52%,74% 22%,81% 55%,88% 20%,95% 50%,100% 30%,100% 100%)}
-.art-m .emoji{position:absolute;left:50%;top:46%;transform:translate(-50%,-50%);font-size:clamp(54px,12dvh,92px);
-  filter:drop-shadow(0 6px 10px #000b) drop-shadow(0 0 22px var(--glow));animation:float 3s ease-in-out infinite}
-@keyframes float{50%{transform:translate(-50%,-56%)}}
-.art-m .ff{position:absolute;width:5px;height:5px;border-radius:50%;background:#ffe9a0;box-shadow:0 0 8px 3px #ffd75c99;animation:ff 5s ease-in-out infinite}
-@keyframes ff{0%,100%{transform:translate(0,0);opacity:.2}50%{transform:translate(18px,-20px);opacity:1}}
-.th-danger{--sky:linear-gradient(#3a1010,#6a2a22);--glow:#ff5a3a88}
-.th-reward{--sky:linear-gradient(#3b2a0c,#8a6a2a);--glow:#ffd75ccc}
-.th-food{--sky:linear-gradient(#17331a,#4c7d2d);--glow:#b5ff6a77}
-.th-relic{--sky:linear-gradient(#1b1040,#4a2a8a);--glow:#b79bffcc}
-.mbody{padding:14px 18px 18px}
-.kicker{font-size:11px;letter-spacing:.3em;color:#7a2f1c;font-weight:700}
-.mbody h2{font-size:22px;margin:2px 0 8px;color:#2a1608}
-.mbody .story{font-size:14.5px;line-height:1.7;margin-bottom:14px;color:#3b2a18}
+@keyframes pop{from{transform:scale(.9) translateY(18px);opacity:0}}
+.mclose{position:absolute;right:10px;top:10px;z-index:3;width:34px;height:34px;border-radius:50%;border:2px solid #f3e4b8;
+  background:#3a2412;color:#f3e4b8;font-size:16px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px #0008}
+.mclose:hover{background:#6a2a18}
+.scene{display:block;width:100%;height:clamp(130px,26dvh,200px);border-bottom:3px solid #3a2412}
+.scene .emb{fill:none;stroke:#2e2010;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.mbody{padding:12px 22px 20px}
+.kicker{font-size:11px;letter-spacing:.35em;color:#8a3a22;font-weight:800;text-align:center}
+.mbody h2{font-size:25px;margin:2px 0 4px;color:#241408;text-align:center}
+.orn{display:flex;align-items:center;gap:8px;margin:0 auto 8px;width:70%;color:#6a4a20}
+.orn::before,.orn::after{content:"";flex:1;height:1.5px;background:linear-gradient(90deg,transparent,#6a4a20)}
+.orn::after{transform:scaleX(-1)}
+.orn i{width:7px;height:7px;transform:rotate(45deg);background:#6a4a20}
+.story{font-size:14.5px;line-height:1.75;margin-bottom:14px;color:#3a2810;text-align:center}
 .opts{display:flex;flex-direction:column;gap:8px}
-.opt{display:flex;align-items:center;gap:10px;text-align:left;padding:10px 12px;border-radius:10px;
-  border:2px solid #4a3019;background:linear-gradient(#fff6d6,#e6d09a);color:var(--ink);transition:.15s}
-.opt:hover:not(:disabled){transform:translateX(4px);background:linear-gradient(#fffbe8,#f3dfa5);box-shadow:0 3px 10px #0004}
-.opt:disabled{opacity:.45;filter:grayscale(.6)}
-.opt .n{flex:0 0 26px;height:26px;border-radius:50%;background:#4a3019;color:var(--parch);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
-.opt .t{flex:1;font-size:14px;font-weight:700;line-height:1.35}
-.opt .t small{display:block;font-weight:400;font-size:12px;color:#6a4a2a;margin-top:1px}
-.mnote{margin-top:10px;font-size:11px;color:#7a6a4a;text-align:center}
+.opt{display:flex;align-items:center;gap:12px;text-align:left;padding:9px 12px;border-radius:6px;
+  border:1.5px solid #3a2412;background:linear-gradient(#f7ecc9,#e0c98f);color:var(--ink);transition:.15s;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.45), 0 1px 0 #0003}
+.opt:hover:not(:disabled){transform:translateX(5px);background:linear-gradient(#fff6d6,#ecd599);box-shadow:0 3px 10px #0004,inset 0 0 0 1px #fff7}
+.opt:disabled{opacity:.45;filter:grayscale(.7)}
+.opt .n{flex:0 0 28px;height:28px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#c4482e,#7a2414);color:#f6e6c0;
+  display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;border:1.5px solid #3a1208;box-shadow:0 1px 3px #0006}
+.opt .t{flex:1;font-size:14.5px;font-weight:800;line-height:1.35}
+.opt .t small{display:block;font-weight:600;font-size:12px;color:#6a4a2a;margin-top:1px}
+.mnote{margin-top:10px;font-size:11px;color:#7a6440;text-align:center}
 
-#menu .mcard,#result .mcard{text-align:center;background:linear-gradient(#2a1d10,#1a110a);color:var(--parch);border-color:#6b4a2a}
-#menu .mbody{padding:22px 24px 22px}
-.logo{font-size:clamp(30px,7vw,48px);letter-spacing:.1em;font-weight:900;
-  background:linear-gradient(#fff2b0,#e8b94a 55%,#9a6a14);-webkit-background-clip:text;background-clip:text;color:transparent;
-  filter:drop-shadow(0 3px 0 #000)}
-.sub{letter-spacing:.5em;color:var(--parch2);font-size:13px;margin:2px 0 14px}
-.bigbtn{display:block;width:100%;margin:8px 0;padding:13px;border-radius:12px;border:2px solid #000;font-size:17px;font-weight:700;
-  background:linear-gradient(#5f9a4a,#2f6a2f);color:#fff;text-shadow:0 2px 0 #0007;box-shadow:0 4px 0 #173a17;transition:.12s}
-.bigbtn.alt{background:linear-gradient(#b57a3a,#7a4a1f);box-shadow:0 4px 0 #3d230d}
+/* menu / pick / result */
+.dark{background:var(--noise),radial-gradient(ellipse at 50% 30%,#3a2a18,#1c130a);color:var(--parch);border-color:#5a3d1c;
+  box-shadow:0 0 0 2px var(--brass2),0 0 0 6px #0c0804,0 24px 60px #000,inset 0 0 60px rgba(0,0,0,.6);text-align:center}
+.logo{font-size:clamp(32px,7vw,52px);letter-spacing:.12em;font-weight:900;margin-top:4px;
+  background:linear-gradient(#fff0b8,#d9a441 55%,#8a5e14);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 3px 0 #000)}
+.sub{letter-spacing:.7em;color:var(--parch3);font-size:13px;margin:0 0 6px;padding-left:.7em}
+.rose{width:92px;height:92px;margin:0 auto;color:var(--brass);display:block}
+.bigbtn{display:block;width:100%;margin:8px 0;padding:13px;border-radius:6px;border:2px solid #0c0804;font-size:17px;font-weight:800;letter-spacing:.12em;
+  background:linear-gradient(#d3a947,#8a6420);color:#1d1308;box-shadow:0 0 0 1.5px #f1d487 inset,0 4px 0 #3f2b0a;transition:.12s}
+.bigbtn.alt{background:linear-gradient(#5a4128,#33241a);color:var(--parch);box-shadow:0 0 0 1.5px var(--brass2) inset,0 4px 0 #0c0804}
 .bigbtn:hover{transform:translateY(-2px);filter:brightness(1.12)}
-.bigbtn:active{transform:translateY(2px);box-shadow:0 1px 0 #000}
-.rules{text-align:left;font-size:13px;line-height:1.65;margin-top:14px;padding:12px 14px;background:#0004;border-radius:10px;color:var(--parch2)}
-.rules b{color:var(--gold)}
+.bigbtn:active{transform:translateY(2px);box-shadow:0 0 0 1.5px #f1d487 inset,0 1px 0 #000}
+.rules{text-align:left;font-size:13px;line-height:1.7;margin-top:12px;padding:12px 16px;background:#0005;border:1px solid #ffffff1a;border-radius:6px;color:var(--parch2)}
+.rules b{color:var(--brass)}
 .rules ul{padding-left:18px}
-#result h1{font-size:44px;margin:6px 0}
-#result.win h1{color:var(--gold);text-shadow:0 0 24px #ffd75c}
-#result.lose h1{color:#ff7a68;text-shadow:0 0 24px #f00}
-#result p{margin:6px 0 14px;line-height:1.6;color:var(--parch2)}
-#result .em{font-size:64px}
+.mbd{padding:20px 26px 22px}
+#pick h2{color:var(--brass);letter-spacing:.2em;font-size:20px}
+#pick p.d{font-size:13px;color:var(--parch3);margin:4px 0 12px}
+.pgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.pbtn{display:flex;flex-direction:column;align-items:center;padding:0 6px 10px;border-radius:6px;background:linear-gradient(#3a2a18,#22170d);border:1.5px solid #5a3d1c;transition:.15s}
+.pbtn:hover:not(:disabled){border-color:var(--brass);background:linear-gradient(#4a3720,#2a1d10);transform:translateY(-3px)}
+.pbtn:disabled{opacity:.35;filter:grayscale(1)}
+.pbtn .pvbox{position:relative;width:100%;height:112px}
+.pbtn b{font-size:15px;letter-spacing:.1em;color:var(--parch)}
+.pbtn small{font-size:11.5px;color:var(--parch3);margin-top:2px;line-height:1.4}
+.pv{position:absolute;left:50%;top:84%;width:0;height:0;perspective:600px}
+.pv .tilt{--ps:1.4}
+#result h1{font-size:44px;margin:6px 0;letter-spacing:.1em}
+#result.win h1{color:#f0c85a;text-shadow:0 0 24px #f0c85a99}
+#result.lose h1{color:#e5705a;text-shadow:0 0 24px #e5705a88}
+#result p{margin:6px 0 16px;line-height:1.7;color:var(--parch2)}
+#result .em{font-size:76px;width:1em;height:1em;margin:0 auto;color:var(--brass);--wash:rgba(240,200,90,.25)}
+#result.lose .em{color:#c9604a;--wash:rgba(200,90,70,.2)}
 
-@media (max-width:640px){
-  :root{--tile:calc(var(--bw) * .108);--bw:min(97vw, calc((100dvh - 380px) * 1.6667))}
+@media (max-width:760px){
+  :root{--tile:calc(var(--bw) * .125);--bw:min(calc(100vw - 12px), calc((100dvh - 330px) * 1.6667))}
+  #hud{flex-wrap:wrap}
   .brand{display:none}
-  .pp{min-width:140px}
-  .stat b{width:30px}
-  .turnbox{min-width:60px}
+  #players{flex-wrap:wrap}
+  .pp{min-width:100%;grid-template-columns:auto 1fr}
+  .slots{display:none}
+  .card{height:76px;padding:6px 6px;gap:5px}
+  .card .med{flex-basis:36px;height:36px;font-size:22px}
+  .card p,.card .cost{display:none}
+  .tile .nm{display:none}
+  #legend{display:none}
 }
 </style>
 </head>
 <body>
 
+<!-- ============ SVG 심볼 (이모지 없이 직접 그린 아이콘) ============ -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<defs>
+  <!-- 타일 -->
+  <symbol id="i-camp" viewBox="0 0 64 64">
+    <path class="w" d="M6 52 L32 14 L58 52 Z"/><path d="M32 14 V6 M32 6 L43 10 L32 14"/><path class="k" d="M24 52 L32 32 L40 52 Z"/><path d="M2 54 H62"/>
+  </symbol>
+  <symbol id="i-normal" viewBox="0 0 64 64">
+    <path class="w" d="M32 6 L47 27 H39 L52 45 H12 L25 27 H17 Z"/><path d="M32 45 V58"/><path d="M8 58 H56"/>
+  </symbol>
+  <symbol id="i-food" viewBox="0 0 64 64">
+    <path class="w" d="M32 22 C20 13 7 24 11 39 C14 51 25 57 32 52 C39 57 50 51 53 39 C57 24 44 13 32 22 Z"/><path d="M32 22 C32 14 34 10 39 7"/><path class="w" d="M39 12 C45 7 52 9 54 14 C47 17 42 16 39 12 Z"/>
+  </symbol>
+  <symbol id="i-danger" viewBox="0 0 64 64">
+    <path class="w" d="M32 6 C17 6 10 18 12 30 C13 36 18 38 20 42 V51 H44 V42 C46 38 51 36 52 30 C54 18 47 6 32 6 Z"/>
+    <circle class="k" cx="24" cy="28" r="5"/><circle class="k" cx="40" cy="28" r="5"/><path class="k" d="M32 34 L28.5 41 H35.5 Z"/><path d="M26 51 V45 M32 51 V45 M38 51 V45"/>
+  </symbol>
+  <symbol id="i-reward" viewBox="0 0 64 64">
+    <path class="w" d="M8 28 H56 V54 H8 Z"/><path class="w" d="M8 28 C8 10 56 10 56 28 Z"/><path d="M8 40 H56"/><path class="k" d="M27 27 H37 V37 H27 Z"/>
+  </symbol>
+  <symbol id="i-relic" viewBox="0 0 64 64">
+    <path class="w" d="M19 11 H45 L57 26 L32 57 L7 26 Z"/><path d="M7 26 H57 M26 26 L32 11 L38 26 M26 26 L32 57 L38 26"/>
+  </symbol>
+  <symbol id="i-unknown" viewBox="0 0 64 64">
+    <path d="M21 22 C21 8 43 8 43 22 C43 33 32 32 32 42" style="stroke-width:5.5"/><circle class="k" cx="32" cy="53" r="3.6"/>
+  </symbol>
+  <!-- 카드 / HUD -->
+  <symbol id="i-move" viewBox="0 0 64 64">
+    <path class="w" d="M21 7 H37 V33 C37 38 42 40 49 44 C55 47 55 57 48 57 H17 C13 57 13 52 16 49 C20 45 21 42 21 36 Z"/><path d="M16 57 H49 M21 47 H37"/>
+  </symbol>
+  <symbol id="i-gather" viewBox="0 0 64 64">
+    <path class="w" d="M9 28 H55 L49 55 H15 Z"/><path d="M12 39 H52 M14 47 H50 M24 28 L25 55 M32 28 V55 M40 28 L39 55"/><path d="M17 28 C17 4 47 4 47 28"/>
+  </symbol>
+  <symbol id="i-guard" viewBox="0 0 64 64">
+    <path class="w" d="M32 6 L54 14 V30 C54 44 44 54 32 59 C20 54 10 44 10 30 V14 Z"/><path d="M32 15 V51 M19 29 H45"/>
+  </symbol>
+  <symbol id="i-heal" viewBox="0 0 64 64">
+    <path class="w" d="M10 53 C7 28 26 9 55 9 C55 38 38 56 10 53 Z"/><path d="M10 53 L40 23 M26 37 L24 25 M36 27 L47 28"/>
+  </symbol>
+  <symbol id="i-heart" viewBox="0 0 64 64">
+    <path class="k" d="M32 55 C9 39 5 24 13 15 C21 7 30 13 32 19 C34 13 43 7 51 15 C59 24 55 39 32 55 Z" style="stroke-width:0"/>
+  </symbol>
+  <symbol id="i-ration" viewBox="0 0 64 64">
+    <path class="k" d="M7 41 C7 24 21 15 32 15 C43 15 57 24 57 41 C57 47 53 51 48 51 H16 C11 51 7 47 7 41 Z" style="stroke-width:0"/>
+    <path d="M22 25 L27 40 M32 22 L37 38 M43 26 L46 40" style="stroke:#1d140c;stroke-width:4"/>
+  </symbol>
+  <symbol id="i-x" viewBox="0 0 64 64"><path d="M14 14 L50 50 M50 14 L14 50" style="stroke-width:7"/></symbol>
+  <symbol id="i-rose" viewBox="-50 -50 100 100">
+    <circle r="44"/><circle r="36" style="stroke-width:1.2"/>
+    <path class="k" d="M0 -48 L8 -9 L0 0 Z M0 48 L-8 9 L0 0 Z M-48 0 L-9 -8 L0 0 Z M48 0 L9 8 L0 0 Z" style="stroke-width:1"/>
+    <path d="M0 -48 L8 -9 L48 0 L9 8 L0 48 L-8 9 L-48 0 L-9 -8 Z" style="stroke-width:2"/>
+    <path d="M0 0 L26 -26 M0 0 L26 26 M0 0 L-26 26 M0 0 L-26 -26" style="stroke-width:1.6"/>
+  </symbol>
+
+  <!-- 사건 일러스트 엠블럼 -->
+  <symbol id="e-wolf" viewBox="0 0 64 64">
+    <path class="w" d="M10 52 L13 14 L26 27 H38 L51 14 L54 52 C54 58 44 60 32 60 C20 60 10 58 10 52 Z"/>
+    <path class="k" d="M21 38 L30 41 L21 44 Z M43 38 L34 41 L43 44 Z"/><path class="k" d="M29 50 L32 56 L35 50 Z"/><path d="M26 58 L28 52 M38 58 L36 52"/>
+  </symbol>
+  <symbol id="e-fog" viewBox="0 0 64 64">
+    <path d="M4 22 C14 14 22 30 32 22 S50 14 60 22"/><path d="M4 34 C14 26 22 42 32 34 S50 26 60 34"/><path d="M4 46 C14 38 22 54 32 46 S50 38 60 46"/>
+    <path d="M12 58 V30 M10 58 V36 M52 58 V26 M54 58 V34"/><ellipse class="w" cx="12" cy="29" rx="3" ry="6"/><ellipse class="w" cx="52" cy="25" rx="3" ry="6"/>
+  </symbol>
+  <symbol id="e-fall" viewBox="0 0 64 64">
+    <g transform="rotate(26 32 54)"><path class="w" d="M32 4 L48 28 H39 L54 48 H10 L25 28 H16 Z"/><path d="M32 48 V60"/></g>
+    <path d="M4 62 H60 M8 56 L2 50 M56 56 L62 50"/>
+  </symbol>
+  <symbol id="e-vines" viewBox="0 0 64 64">
+    <path d="M6 54 C16 14 26 62 36 28 S52 18 58 8"/><path d="M6 40 C20 40 22 56 40 52 S54 44 58 36" style="stroke-width:2.6"/>
+    <path d="M14 38 L9 33 M20 50 L15 55 M32 40 L36 46 M38 24 L33 20 M48 20 L53 24 M26 56 L31 60"/>
+    <path class="w" d="M44 48 C50 46 54 50 52 56 C46 56 44 52 44 48 Z"/>
+  </symbol>
+  <symbol id="e-pack" viewBox="0 0 64 64">
+    <path class="w" d="M16 22 C16 8 48 8 48 22 V56 H16 Z"/><path d="M16 30 H48 M24 30 V40 H40 V30 M12 26 V50 M52 26 V50"/><path class="k" d="M30 36 H34 V40 H30 Z"/><path d="M26 14 C26 6 38 6 38 14"/>
+  </symbol>
+  <symbol id="e-spring" viewBox="0 0 64 64">
+    <path class="w" d="M8 46 H56 L50 57 H14 Z"/><path d="M32 46 V26 M22 26 H42 M24 26 C24 20 40 20 40 26"/>
+    <path d="M32 20 C29 10 24 8 21 12 M32 20 C35 10 40 8 43 12 M32 18 V6"/>
+  </symbol>
+  <symbol id="e-rune" viewBox="0 0 64 64">
+    <path class="w" d="M16 58 L14 16 C14 6 50 6 50 16 L48 58 Z"/><path d="M25 20 L32 30 L25 40 M40 20 V40 M27 49 H40"/>
+  </symbol>
+  <symbol id="e-berry" viewBox="0 0 64 64">
+    <circle class="w" cx="21" cy="40" r="9"/><circle class="w" cx="42" cy="38" r="9"/><circle class="w" cx="31" cy="51" r="8"/>
+    <path d="M21 31 C22 20 30 14 34 8 M42 29 C41 20 36 14 34 8"/><path class="w" d="M34 9 C40 3 49 5 51 11 C44 14 38 13 34 9 Z"/>
+  </symbol>
+  <symbol id="e-fish" viewBox="0 0 64 64">
+    <path class="w" d="M6 32 C18 12 40 12 52 32 C40 52 18 52 6 32 Z"/><path class="w" d="M52 32 L61 21 V43 Z"/><circle class="k" cx="19" cy="29" r="2.8"/><path d="M28 22 C32 28 32 36 28 42 M36 20 C40 27 40 37 36 44"/>
+  </symbol>
+  <symbol id="e-deer" viewBox="0 0 64 64">
+    <path class="w" d="M23 36 L32 58 L41 36 C41 28 23 28 23 36 Z"/>
+    <path d="M24 34 C14 28 13 18 11 8 M16 22 L7 20 M17 15 L9 9 M40 34 C50 28 51 18 53 8 M48 22 L57 20 M47 15 L55 9"/><circle class="k" cx="28" cy="40" r="2"/><circle class="k" cx="36" cy="40" r="2"/>
+  </symbol>
+  <symbol id="e-altar" viewBox="0 0 64 64">
+    <path class="w" d="M8 58 H56 V50 H8 Z"/><path class="w" d="M15 50 V40 H49 V50"/>
+    <path class="w" d="M23 6 H41 L50 17 L32 38 L14 17 Z"/><path d="M14 17 H50 M28 17 L32 6 L36 17 M28 17 L32 38 L36 17"/>
+  </symbol>
+</defs>
+</svg>
+
 <header id="hud">
   <div class="brand"><b>WILDERPATH</b><small>잊힌 숲</small></div>
   <div id="players"></div>
-  <div class="turnbox" id="turnbox"><small>TURN</small><div><b id="turn">1</b><span> / <span id="maxturn">26</span></span></div></div>
-  <button id="menuBtn" title="메뉴 / 규칙">☰ 메뉴</button>
+  <div class="turnbox" id="turnbox"><small>TURN</small><div class="n"><b id="turn">1</b><span> / <span id="maxturn">26</span></span></div><div class="tb"><i id="turnbar"></i></div></div>
+  <button id="menuBtn" title="메뉴 / 규칙">메뉴</button>
 </header>
 
 <main id="mainArea">
@@ -262,23 +410,31 @@ main{flex:1;display:flex;flex-direction:column;align-items:center;justify-conten
     <div id="tiles"></div>
     <div id="pawns"></div>
     <div id="legend">
-      <span>⛺캠프</span><span>🌲일반</span><span>🍎식량</span><span>💀위험</span><span>🎁보상</span><span>💎유물</span><span>❓미확인(●=위험도)</span>
+      <h4>범례</h4>
+      <span><svg class="ic"><use href="#i-camp"/></svg>캠프</span>
+      <span><svg class="ic"><use href="#i-normal"/></svg>숲길</span>
+      <span><svg class="ic"><use href="#i-food"/></svg>식량</span>
+      <span><svg class="ic"><use href="#i-danger"/></svg>위험</span>
+      <span><svg class="ic"><use href="#i-reward"/></svg>보상</span>
+      <span><svg class="ic"><use href="#i-relic"/></svg>유물</span>
+      <span><svg class="ic"><use href="#i-unknown"/></svg>미지 (점=위험도)</span>
     </div>
     <div id="banner"></div>
+    <div id="msg"></div>
   </div>
-  <div id="msg"></div>
 </main>
 
 <footer id="cards"></footer>
 
 <!-- 사건 모달 -->
 <div id="modal" class="backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="mtitle">
-  <div class="mcard">
-    <button class="mclose" id="mclose" aria-label="닫기">✕</button>
-    <div class="art-m" id="martArea"></div>
+  <div class="sheet">
+    <button class="mclose" id="mclose" aria-label="닫기"><svg class="ic"><use href="#i-x"/></svg></button>
+    <div id="martArea"></div>
     <div class="mbody">
       <div class="kicker" id="mkick"></div>
       <h2 id="mtitle"></h2>
+      <div class="orn"><i></i></div>
       <p class="story" id="mstory"></p>
       <div class="opts" id="mopts"></div>
       <p class="mnote" id="mnote"></p>
@@ -288,34 +444,44 @@ main{flex:1;display:flex;flex-direction:column;align-items:center;justify-conten
 
 <!-- 메인 메뉴 -->
 <div id="menu" class="backdrop">
-  <div class="mcard"><div class="mbody">
+  <div class="sheet dark"><div class="mbd">
+    <svg class="ic rose"><use href="#i-rose"/></svg>
     <div class="logo">WILDERPATH</div>
     <div class="sub">잊 힌 숲</div>
-    <button class="bigbtn" id="btn1">🎒 혼자 플레이</button>
-    <button class="bigbtn alt" id="btn2">🪵 2인 로컬 대전</button>
-    <button class="bigbtn alt" id="btnResume" style="display:none;background:linear-gradient(#4a4a4a,#2a2a2a);box-shadow:0 4px 0 #111">▶ 게임으로 돌아가기</button>
+    <button class="bigbtn" id="btn1">혼자 플레이</button>
+    <button class="bigbtn alt" id="btn2">2인 로컬 대전</button>
+    <button class="bigbtn alt" id="btnResume" style="display:none">게임으로 돌아가기</button>
     <div class="rules">
-      <b>목표</b> 숲 깊은 곳의 <b>💎유물</b>을 찾아 <b>⛺캠프</b>로 돌아오면 승리!<br>
-      <b>패배</b> 체력 0, 또는 제한 턴 안에 귀환하지 못함.
+      <b>목표</b> 숲 깊은 곳의 <b>유물</b>을 찾아 <b>캠프</b>로 돌아오면 승리! 체력이 0이 되거나 제한 턴 안에 귀환하지 못하면 패배합니다.
       <ul>
         <li>매 턴 카드 한 장: <b>이동</b>(인접 타일 1칸, 식량 -1) · <b>채집</b>(식량 +2) · <b>방어</b>(다음 피해 -3) · <b>치유</b>(체력 +3, 식량 -1)</li>
-        <li>타일을 직접 클릭해도 이동합니다. 식량이 없으면 이동할 때 체력을 잃어요.</li>
-        <li>❓타일은 도착해야 정체가 드러나고, 점(●)은 위험도입니다.</li>
-        <li>사건이 일어나면 창이 열리고, 3개의 선택지 중 하나를 고릅니다.</li>
-        <li><b>2인 모드</b>: 번갈아 플레이. 먼저 유물을 들고 귀환하면 승리, 상대 체력이 0이 되어도 승리. 유물을 든 상대와 같은 타일에 도착하면 유물을 빼앗습니다. 무승부는 없습니다.</li>
-        <li>단축키: 카드 1~4, 사건 선택지 1~3</li>
+        <li>타일을 직접 눌러도 이동합니다. 식량이 없으면 이동할 때 체력을 잃습니다.</li>
+        <li>미지 타일은 도착해야 정체가 드러나고, 점은 위험도를 뜻합니다.</li>
+        <li>사건이 일어나면 창이 열리고, 선택지 3개 중 하나를 고릅니다.</li>
+        <li><b>2인 모드</b>: 번갈아 플레이. 먼저 유물을 들고 귀환하거나 상대 체력이 0이 되면 승리. 유물을 든 상대와 같은 타일에 도착하면 유물을 빼앗습니다. 무승부는 없습니다.</li>
+        <li>단축키: 카드 1~4 · 사건 선택지 1~3</li>
       </ul>
     </div>
   </div></div>
 </div>
 
+<!-- 말 선택 -->
+<div id="pick" class="backdrop hidden">
+  <div class="sheet dark"><div class="mbd">
+    <h2 id="pickTitle">말을 고르세요</h2>
+    <p class="d" id="pickDesc"></p>
+    <div class="pgrid" id="pgrid"></div>
+    <button class="bigbtn alt" id="pickBack" style="margin-top:14px;padding:9px;font-size:14px">뒤로</button>
+  </div></div>
+</div>
+
 <!-- 결과 화면 -->
 <div id="result" class="backdrop hidden">
-  <div class="mcard"><div class="mbody">
-    <div class="em" id="rem"></div>
+  <div class="sheet dark"><div class="mbd">
+    <svg class="ic em" id="rem"><use href="#i-relic"/></svg>
     <h1 id="rtitle"></h1>
     <p id="rtext"></p>
-    <button class="bigbtn" id="again">🔁 다시하기</button>
+    <button class="bigbtn" id="again">다시하기</button>
     <button class="bigbtn alt" id="toMenu">메뉴로</button>
   </div></div>
 </div>
@@ -330,17 +496,19 @@ const rnd = n => Math.floor(Math.random() * n);
 const pick = a => a[rnd(a.length)];
 const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = rnd(i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; };
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const ic = (name, cls) => `<svg class="ic ${cls || ''}"><use href="#${name}"/></svg>`;
 
 const MAX_HP = 10, MAX_FOOD = 10, MAX_TURN = 26;
+const RING = ['#d9a441', '#3fa58b'];
 
 /* ---------- 지도 데이터 (1000x600 좌표) ---------- */
 const POS = [
-  [70,300],
-  [210,150],[210,300],[210,450],
-  [360,90],[360,230],[360,370],[360,510],
-  [520,150],[520,300],[520,450],
-  [680,90],[680,230],[680,370],[680,510],
-  [840,160],[840,300],[840,440]
+  [78,300],
+  [215,148],[215,300],[215,452],
+  [365,86],[365,228],[365,372],[365,514],
+  [525,148],[525,300],[525,452],
+  [685,86],[685,228],[685,372],[685,514],
+  [845,150],[845,300],[845,450]
 ];
 const EDGES = [
   [0,1],[0,2],[0,3],[1,4],[1,5],[2,5],[2,6],[3,6],[3,7],
@@ -348,38 +516,34 @@ const EDGES = [
   [8,11],[8,12],[9,12],[9,13],[10,13],[10,14],
   [11,15],[12,15],[12,16],[13,16],[13,17],[14,17]
 ];
-
-const ICON = { camp:'⛺', normal:'🌲', food:'🍎', danger:'💀', reward:'🎁', relic:'💎', unknown:'❓' };
-const USED_ICON = { normal:'🌲', food:'🍂', danger:'🦴', reward:'📭', relic:'🕳️' };
-const TNAME = { camp:'캠프', normal:'숲길', food:'식량', danger:'위험', reward:'보상', relic:'유물', unknown:'미확인' };
+const TNAME = { camp:'캠프', normal:'숲길', food:'식량', danger:'위험', reward:'보상', relic:'유물', unknown:'미지' };
 const RISK = { danger:[2,3], reward:[1,1], food:[0,1], normal:[0,1], relic:[2,2], camp:[0,0] };
 
 /* ---------- 사건 데이터 ---------- */
-// run(c): c.hurt(n) c.food(n) c.heal(n) c.shield() c.relic() c.chance(p) → 결과 문장 반환
 const EVENTS = {
   danger: [
-    { emoji:'🐺', theme:'danger', title:'굶주린 늑대 무리', required:true,
+    { emb:'wolf', theme:'danger', title:'굶주린 늑대 무리', required:true,
       story:'덤불 속에서 노란 눈들이 하나둘 번뜩인다. 마른 늑대 무리가 길을 막고 낮게 으르렁거린다. 눈을 피하면 곧바로 달려들 기세다.',
       opts:[
         { label:'횃불을 휘두르며 맞선다', hint:'피해 2~3 · 쓰러뜨리면 식량 +2', run:c=>{ c.hurt(2+rnd(2)); c.food(2); return '횃불에 놀란 늑대들이 물러났다. 쓰러진 한 마리에게서 고기를 얻었다.'; } },
         { label:'숨죽이고 우회한다', hint:'55% 무사 · 45% 피해 3', run:c=>{ if(c.chance(.55)) return '그림자처럼 소리 없이 덤불 뒤를 돌아 지나갔다.'; c.hurt(3); return '마른 가지를 밟고 말았다! 늑대의 이빨이 스쳤다.'; } },
         { label:'식량을 던져주고 지나간다', hint:'식량 -2 · 피해 없음', cost:{food:2}, run:c=>'늑대들이 먹이에 달려든 사이 조용히 빠져나왔다.' }
       ]},
-    { emoji:'🌫️', theme:'danger', title:'독안개 늪', required:true,
+    { emb:'fog', theme:'danger', title:'독안개 늪', required:true,
       story:'발목까지 잠기는 늪에서 보랏빛 안개가 피어오른다. 숨을 쉬면 목이 타는 듯하다. 건너편 길은 안개 너머로 희미하게 보인다.',
       opts:[
         { label:'숨을 참고 달려서 건넌다', hint:'피해 2', run:c=>{ c.hurt(2); return '폐가 타들어가는 듯했지만 늪을 건넜다.'; } },
         { label:'나뭇가지로 길을 더듬는다', hint:'70% 무사 · 30% 피해 3', run:c=>{ if(c.chance(.7)) return '단단한 땅을 하나씩 짚으며 안전하게 건넜다.'; c.hurt(3); return '발이 푹 빠지며 독기를 들이마셨다.'; } },
         { label:'약초를 태워 안개를 쫓는다', hint:'식량 -1 · 피해 없음', cost:{food:1}, run:c=>'약초 연기가 독기를 밀어냈다. 길이 열렸다.' }
       ]},
-    { emoji:'🌳', theme:'danger', title:'쓰러지는 고목', required:true,
+    { emb:'fall', theme:'danger', title:'쓰러지는 고목', required:true,
       story:'발밑이 울린다. 뿌리째 썩은 거대한 고목이 삐걱거리며 길 위로 기울고 있다. 지금 지나가지 않으면 길이 막혀 버릴 것 같다.',
       opts:[
         { label:'몸을 던져 피한다', hint:'피해 1', run:c=>{ c.hurt(1); return '굴러서 간신히 피했다. 팔꿈치가 쓸렸다.'; } },
         { label:'버팀목을 세우고 지나간다', hint:'식량 -1 · 피해 없음', cost:{food:1}, run:c=>'급히 만든 버팀목이 버텨 주었다.' },
         { label:'무모하게 전속력으로 통과', hint:'40% 무사 · 60% 피해 4', run:c=>{ if(c.chance(.4)) return '아슬아슬하게 지나쳤다! 등 뒤로 쿵 소리가 울렸다.'; c.hurt(4); return '가지에 정통으로 맞았다!'; } }
       ]},
-    { emoji:'🌿', theme:'danger', title:'가시덩굴 함정', required:true,
+    { emb:'vines', theme:'danger', title:'가시덩굴 함정', required:true,
       story:'길을 가로질러 검은 가시덩굴이 얽혀 있다. 누군가 일부러 쳐 둔 듯한 흔적이 보인다. 덩굴 사이에서 붉은 열매 몇 개가 반짝인다.',
       opts:[
         { label:'칼로 베어 길을 연다', hint:'피해 2 · 열매 식량 +1', run:c=>{ c.hurt(2); c.food(1); return '가시에 긁혔지만 길을 열고 열매도 챙겼다.'; } },
@@ -388,21 +552,21 @@ const EVENTS = {
       ]}
   ],
   reward: [
-    { emoji:'🎒', theme:'reward', title:'버려진 여행자의 짐', required:false,
+    { emb:'pack', theme:'reward', title:'버려진 여행자의 짐', required:false,
       story:'이끼에 덮인 낡은 배낭이 나무뿌리 사이에 놓여 있다. 주인은 보이지 않는다. 안에서 달그락거리는 소리가 난다.',
       opts:[
         { label:'꼼꼼히 뒤져 식량을 챙긴다', hint:'식량 +3', run:c=>{ c.food(3); return '말린 고기와 딱딱한 빵을 찾았다.'; } },
         { label:'약병만 챙긴다', hint:'체력 +3', run:c=>{ c.heal(3); return '쓴 약초즙이 몸을 따뜻하게 했다.'; } },
-        { label:'수상한 나무 상자를 연다', hint:'50% 체력+4·식량+2 / 50% 피해 2', run:c=>{ if(c.chance(.5)){ c.heal(4); c.food(2); return '상자 안에는 귀한 약과 식량이 가득했다!'; } c.hurt(2); return '상자에서 독침이 튀어나왔다!'; } }
+        { label:'수상한 나무 상자를 연다', hint:'50% 체력 +4·식량 +2 / 50% 피해 2', run:c=>{ if(c.chance(.5)){ c.heal(4); c.food(2); return '상자 안에는 귀한 약과 식량이 가득했다!'; } c.hurt(2); return '상자에서 독침이 튀어나왔다!'; } }
       ]},
-    { emoji:'⛲', theme:'reward', title:'요정의 샘', required:false,
+    { emb:'spring', theme:'reward', title:'요정의 샘', required:false,
       story:'숲 한가운데, 은빛 물이 솟는 작은 샘이 있다. 물 위로 작은 빛들이 춤추듯 떠다닌다. 어디선가 맑은 종소리가 들린다.',
       opts:[
         { label:'샘물을 마신다', hint:'체력 +4', run:c=>{ c.heal(4); return '차가운 물이 피로를 씻어냈다.'; } },
         { label:'물을 병에 담는다', hint:'식량 +2 · 체력 +1', run:c=>{ c.food(2); c.heal(1); return '물병이 영롱한 물로 채워졌다.'; } },
         { label:'샘에 기도한다', hint:'방어막 획득 · 체력 +1', run:c=>{ c.shield(); c.heal(1); return '빛이 몸을 감싸며 방어막이 생겼다.'; } }
       ]},
-    { emoji:'🗿', theme:'reward', title:'고대 룬석', required:false,
+    { emb:'rune', theme:'reward', title:'고대 룬석', required:false,
       story:'덩굴에 반쯤 덮인 돌기둥이 희미한 녹색 빛을 내고 있다. 새겨진 문양은 오래전 이 숲을 지키던 이들의 것이다.',
       opts:[
         { label:'손을 얹고 기운을 받는다', hint:'50% 체력 +5 / 50% 피해 1', run:c=>{ if(c.chance(.5)){ c.heal(5); return '따뜻한 힘이 온몸에 흘렀다.'; } c.hurt(1); return '룬이 번쩍이며 손끝을 태웠다.'; } },
@@ -411,21 +575,21 @@ const EVENTS = {
       ]}
   ],
   food: [
-    { emoji:'🍓', theme:'food', title:'야생 열매 숲', required:false,
+    { emb:'berry', theme:'food', title:'야생 열매 숲', required:false,
       story:'붉고 푸른 열매가 가지마다 주렁주렁 매달려 있다. 새들이 지저귀는 소리가 이곳이 평화롭다고 알려주는 듯하다.',
       opts:[
         { label:'잔뜩 따서 모은다', hint:'식량 +3', run:c=>{ c.food(3); return '배낭이 열매로 가득 찼다.'; } },
         { label:'잘 익은 것만 골라 먹는다', hint:'식량 +1 · 체력 +2', run:c=>{ c.food(1); c.heal(2); return '달콤한 열매가 기력을 되살렸다.'; } },
         { label:'낯선 보랏빛 열매를 딴다', hint:'50% 식량 +5 / 50% 피해 2', run:c=>{ if(c.chance(.5)){ c.food(5); return '맛도 영양도 최고인 열매였다!'; } c.hurt(2); return '독이 있는 열매였다. 속이 뒤집힌다...'; } }
       ]},
-    { emoji:'🐟', theme:'food', title:'시냇가의 물고기', required:false,
+    { emb:'fish', theme:'food', title:'시냇가의 물고기', required:false,
       story:'맑은 시냇물에 은빛 물고기들이 모여 있다. 바위 위에서 햇살이 따뜻하게 내려앉는다.',
       opts:[
         { label:'맨손으로 잡는다', hint:'70% 식량 +4 / 30% 식량 +1', run:c=>{ if(c.chance(.7)){ c.food(4); return '큼직한 물고기를 몇 마리 낚아챘다!'; } c.food(1); return '대부분 놓쳤지만 한 마리는 잡았다.'; } },
         { label:'낚싯대를 만든다', hint:'식량 +3', run:c=>{ c.food(3); return '느긋하게 기다린 끝에 든든한 식사를 얻었다.'; } },
         { label:'물가에서 쉰다', hint:'체력 +2 · 식량 +1', run:c=>{ c.heal(2); c.food(1); return '물소리를 들으며 잠시 눈을 붙였다.'; } }
       ]},
-    { emoji:'🦌', theme:'food', title:'사슴 발자국', required:false,
+    { emb:'deer', theme:'food', title:'사슴 발자국', required:false,
       story:'진흙 위에 갓 찍힌 사슴 발자국이 이어져 있다. 멀지 않은 곳에 있는 것 같다. 근처에는 버섯도 눈에 띈다.',
       opts:[
         { label:'추적해서 사냥한다', hint:'60% 식량 +5 / 40% 식량 +1·피해 1', run:c=>{ if(c.chance(.6)){ c.food(5); return '화살 한 방! 푸짐한 사냥감을 얻었다.'; } c.food(1); c.hurt(1); return '사슴에게 뒷발로 걷어차였다.'; } },
@@ -434,7 +598,7 @@ const EVENTS = {
       ]}
   ],
   relic: [
-    { emoji:'💎', theme:'relic', title:'잊힌 제단', required:false,
+    { emb:'altar', theme:'relic', title:'잊힌 제단', required:false,
       story:'이끼 낀 제단 위에서 푸른 유물이 소리 없이 떠 있다. 숲이 숨을 죽인 듯 고요하다. 제단 주위에는 수호 문양이 새겨져 있다. 이것이 바로 찾던 유물이다.',
       opts:[
         { label:'곧장 움켜쥔다', hint:'유물 획득 · 피해 2', run:c=>{ c.relic(); c.hurt(2); return '수호 문양이 번쩍! 충격을 견디고 유물을 손에 넣었다.'; } },
@@ -443,26 +607,39 @@ const EVENTS = {
       ]}
   ]
 };
+const THEME = {
+  danger:{ wash:'#9a3f2a', tint:'rgba(150,50,30,.28)', kick:'위험한 사건' },
+  reward:{ wash:'#c9972f', tint:'rgba(200,150,40,.28)', kick:'뜻밖의 발견' },
+  food:  { wash:'#6a8a3a', tint:'rgba(90,130,50,.28)',  kick:'숲의 은혜' },
+  relic: { wash:'#6a58a6', tint:'rgba(100,80,170,.32)', kick:'유물의 부름' }
+};
+
+/* ---------- 말(3D) 종류 ---------- */
+const PAWNS = [
+  { id:'hat',     name:'탐험가 모자', desc:'깃털 달린 사파리 모자', build:makeHat },
+  { id:'scope',   name:'망원경',      desc:'놋쇠 마디의 접이식 망원경', build:makeScope },
+  { id:'compass', name:'나침반',      desc:'바늘이 흔들리는 놋쇠 나침반', build:makeCompass },
+  { id:'lantern', name:'랜턴',        desc:'불꽃이 타오르는 등불', build:makeLantern }
+];
+const pawnById = id => PAWNS.find(p => p.id === id);
 
 /* ---------- 상태 ---------- */
 let G = null;
 const cur = () => G.players[G.cur];
 const other = () => G.players[1 - G.cur];
 
-function newGame(mode) {
+function newGame(mode, pawns) {
   const nodes = POS.map(([x, y], i) => ({ id:i, x, y, adj:[], type: i ? 'normal' : 'camp', hidden:false, used:false, risk:0, ev:null }));
   EDGES.forEach(([a, b]) => { nodes[a].adj.push(b); nodes[b].adj.push(a); });
 
-  // 유물 위치: 캠프에서 먼 8~17번 중 무작위
-  const relicNode = 8 + rnd(10);
+  const relicNode = 8 + rnd(10);            // 유물 위치: 캠프에서 먼 타일 중 무작위
   nodes[relicNode].type = 'relic';
 
   const pool = shuffle([
     ...Array(4).fill('danger'), ...Array(3).fill('food'), ...Array(3).fill('reward'), ...Array(6).fill('normal')
   ]);
   const rest = nodes.filter(n => n.id !== 0 && n.id !== relicNode).map(n => n.id);
-  // 캠프 바로 옆 타일엔 위험 타일을 두지 않음
-  rest.filter(i => nodes[0].adj.includes(i)).forEach(i => {
+  rest.filter(i => nodes[0].adj.includes(i)).forEach(i => {   // 캠프 옆엔 위험 타일 없음
     const k = pool.findIndex(t => t !== 'danger');
     nodes[i].type = pool.splice(k, 1)[0];
   });
@@ -474,8 +651,8 @@ function newGame(mode) {
     n.hidden = n.id !== 0 && n.type !== 'relic' && Math.random() < .55;
   });
 
-  const mk = i => ({ name:`플레이어 ${i + 1}`, hp:MAX_HP, food:6, relic:false, shield:0, pos:0, alive:true });
-  G = { mode, nodes, relicNode, players: mode === 2 ? [mk(0), mk(1)] : [mk(0)],
+  const mk = i => ({ name:`플레이어 ${i + 1}`, pawn:pawns[i], hp:MAX_HP, food:6, relic:false, shield:0, pos:0, alive:true });
+  G = { mode, pawns, nodes, relicNode, players: mode === 2 ? [mk(0), mk(1)] : [mk(0)],
         cur:0, turn:1, maxTurn:MAX_TURN, phase:'idle', sel:false, curNode:null };
   $('#maxturn').textContent = MAX_TURN;
   buildBoard(); renderAll();
@@ -483,39 +660,65 @@ function newGame(mode) {
   hideBanner();
 }
 
-/* ---------- 보드 구성 ---------- */
-function buildBoard() {
-  // 길
-  const svg = $('#paths'); let s = '';
-  EDGES.forEach(([a, b], k) => {
-    const A = POS[a], B = POS[b];
-    const mx = (A[0] + B[0]) / 2, my = (A[1] + B[1]) / 2;
-    const off = ((k * 37) % 30) - 15;
-    const d = `M${A[0]},${A[1]} Q${mx},${my + off} ${B[0]},${B[1]}`;
-    s += `<path d="${d}" stroke="#1a0f06" stroke-width="22" fill="none" stroke-linecap="round" opacity=".7"/>`
-       + `<path d="${d}" stroke="#8a6a45" stroke-width="15" fill="none" stroke-linecap="round"/>`
-       + `<path d="${d}" stroke="#b89868" stroke-width="3" fill="none" stroke-dasharray="2 12" stroke-linecap="round"/>`;
+/* ---------- 지도 장식 + 보드 구성 ---------- */
+function seeded(seed) { return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function distSeg(px, py, a, b) {
+  const dx = b[0] - a[0], dy = b[1] - a[1]; const l2 = dx * dx + dy * dy;
+  let t = l2 ? ((px - a[0]) * dx + (py - a[1]) * dy) / l2 : 0; t = clamp(t, 0, 1);
+  return Math.hypot(px - (a[0] + t * dx), py - (a[1] + t * dy));
+}
+function buildMapSVG() {
+  const INK = '#3a2814', r = seeded(11);
+  let s = '';
+  s += `<rect x="24" y="24" width="952" height="552" fill="none" stroke="${INK}" stroke-width="2" opacity=".5"/>`;
+  s += `<rect x="30" y="30" width="940" height="540" fill="none" stroke="${INK}" stroke-width=".8" opacity=".45"/>`;
+  for (let x = 60; x < 960; x += 60) s += `<path d="M${x} 24 V32 M${x} 568 V576" stroke="${INK}" stroke-width="1.2" opacity=".5"/>`;
+  for (let y = 60; y < 580; y += 60) s += `<path d="M24 ${y} H32 M968 ${y} H976" stroke="${INK}" stroke-width="1.2" opacity=".5"/>`;
+  const spots = [];
+  for (let k = 0; k < 600 && spots.length < 70; k++) {
+    const x = 50 + r() * 900, y = 50 + r() * 500;
+    if (POS.some(p => Math.hypot(p[0] - x, p[1] - y) < 68)) continue;
+    if (EDGES.some(([a, b]) => distSeg(x, y, POS[a], POS[b]) < 34)) continue;
+    if (x < 175 && (y < 105 || y > 400)) continue;               // 제목·범례 자리
+    if (x > 875 && y > 470) continue;                            // 나침반 장미 자리
+    if (spots.some(p => Math.hypot(p[0] - x, p[1] - y) < 30)) continue;
+    spots.push([x, y]);
+  }
+  spots.forEach(([x, y], i) => {
+    if (i % 5 === 4) s += `<g transform="translate(${x} ${y})" fill="rgba(120,90,40,.18)" stroke="${INK}" stroke-width="1.6" stroke-linejoin="round" opacity=".7"><path d="M-17 6 Q-8 -14 0 6 Q8 -14 17 6"/><path d="M-9 -2 L-6 4 M-1 -3 L2 3" stroke-width="1"/></g>`;
+    else s += `<g transform="translate(${x} ${y}) scale(${.8 + r() * .5})" fill="rgba(70,100,40,.28)" stroke="${INK}" stroke-width="1.6" stroke-linejoin="round" opacity=".72"><path d="M0 -15 L8 -1 H3 L10 10 H-10 L-3 -1 H-8 Z"/><path d="M0 10 V15"/></g>`;
   });
-  svg.innerHTML = s;
+  EDGES.forEach(([a, b], k) => {
+    const A = POS[a], B = POS[b], mx = (A[0] + B[0]) / 2, my = (A[1] + B[1]) / 2, off = ((k * 37) % 30) - 15;
+    const d = `M${A[0]},${A[1]} Q${mx},${my + off} ${B[0]},${B[1]}`;
+    s += `<path d="${d}" stroke="rgba(120,80,30,.28)" stroke-width="15" fill="none" stroke-linecap="round"/>`
+       + `<path d="${d}" stroke="${INK}" stroke-width="3.4" fill="none" stroke-dasharray="1 9" stroke-linecap="round"/>`
+       + `<path d="${d}" stroke="${INK}" stroke-width="1.3" fill="none" opacity=".8"/>`;
+  });
+  s += `<g transform="translate(112 66)"><rect x="-78" y="-26" width="156" height="52" rx="3" fill="rgba(236,220,176,.55)" stroke="${INK}" stroke-width="2"/><rect x="-72" y="-20" width="144" height="40" rx="2" fill="none" stroke="${INK}" stroke-width="1"/>
+        <text x="0" y="3" text-anchor="middle" font-size="22" font-weight="800" fill="${INK}" font-family="Nanum Myeongjo,Noto Serif KR,Batang,Georgia,serif" letter-spacing="4">잊힌 숲</text>
+        <text x="0" y="17" text-anchor="middle" font-size="8.5" fill="${INK}" letter-spacing="5" font-family="Georgia,serif">WILDERPATH</text></g>`;
+  s += `<g transform="translate(928 530)" opacity=".85"><use href="#i-rose" x="-48" y="-48" width="96" height="96" style="fill:none;stroke:${INK};stroke-width:2;--wash:transparent;color:${INK}"/><text x="0" y="-52" text-anchor="middle" font-size="13" font-weight="800" fill="${INK}" font-family="Georgia,serif">N</text></g>`;
+  $('#paths').innerHTML = s;
+}
 
-  // 타일
+function buildBoard() {
+  buildMapSVG();
   const tiles = $('#tiles'); tiles.innerHTML = '';
   G.nodes.forEach(n => {
     const b = document.createElement('button');
     b.className = 'tile'; b.dataset.id = n.id;
     b.style.left = (n.x / 10) + '%'; b.style.top = (n.y / 6) + '%';
-    b.innerHTML = '<div class="rim"></div><div class="face"><span class="ico"></span></div><div class="pips"></div><div class="nm"></div>';
+    b.innerHTML = '<div class="rim"></div><div class="edge"></div><div class="face"></div><div class="pips"></div><div class="nm"></div>';
     b.addEventListener('click', () => onTile(n.id));
     tiles.appendChild(b);
   });
-
-  // 말
   const pw = $('#pawns'); pw.innerHTML = '';
   G.players.forEach((p, i) => {
     const el = document.createElement('div');
     el.className = 'pawn'; el.id = 'pawn' + i;
     el.innerHTML = '<div class="shadow"></div><div class="hopper"><div class="tilt"><div class="spin"></div></div></div>';
-    el.querySelector('.spin').appendChild(i === 0 ? makeSack('#e8b94a') : makeBranch('#7fd36b'));
+    el.querySelector('.spin').appendChild(pawnById(p.pawn).build(RING[i]));
     pw.appendChild(el);
   });
   fitBoard();
@@ -523,7 +726,7 @@ function buildBoard() {
 
 function fitBoard() {
   const b = $('#board');
-  b.style.setProperty('--ps', (b.clientWidth / 1000 * 1.6).toFixed(3));
+  b.style.setProperty('--ps', (b.clientWidth / 1000 * 1.45).toFixed(3));
   if (G) renderPawns(false);
 }
 new ResizeObserver(fitBoard).observe($('#board'));
@@ -534,12 +737,11 @@ function disc(r, y, color, top) {
   d.className = 'disc';
   const dark = `color-mix(in srgb, ${color} 55%, #000)`;
   d.style.cssText = `width:${2*r}px;height:${2*r}px;margin:${-r}px 0 0 ${-r}px;` +
-    `background:radial-gradient(circle, ${top ? `color-mix(in srgb, ${color} 80%, #fff)` : color} 0%, ${color} 58%, ${dark} 100%);` +
+    `background:radial-gradient(circle, ${top ? `color-mix(in srgb, ${color} 78%, #fff)` : color} 0%, ${color} 58%, ${dark} 100%);` +
     `transform:translateY(${-y}px) rotateX(90deg)`;
   return d;
 }
-// profile: [[y, r, color], ...]
-function lathe(profile, step) {
+function lathe(profile, step) {   // profile: [[높이, 반지름, 색], ...]
   step = step || 1.5;
   const el = document.createElement('div'); el.className = 'solid';
   const topY = profile[profile.length - 1][0];
@@ -559,80 +761,95 @@ function plane(html, cls, x, y, z, ry) {
   p.style.transform = `translate3d(${x}px,${-y}px,${z}px) rotateY(${ry || 0}deg)`;
   return p;
 }
-// 돈가방
-function makeSack(ring) {
-  const root = document.createElement('div'); root.className = 'solid';
-  root.appendChild(lathe([
-    [0, 26, ring], [3, 26, ring], [3.6, 15, '#8a6a3a'], [7, 19, '#a07c47'], [15, 23, '#b8924f'],
-    [23, 20, '#b08a4a'], [30, 12, '#a07c47'], [34, 7, '#7b5a2e'], [37, 7, '#4a2f14'],
-    [39, 12, '#b08a4a'], [46, 14, '#c9a35f']
-  ]));
-  root.appendChild(plane('$', 'coin', 0, 15, 24.5, 0));
-  root.appendChild(plane('$', 'coin', 0, 15, -24.5, 180));
-  root.appendChild(plane('$', 'coin', 24.5, 15, 0, 90));
-  root.appendChild(plane('$', 'coin', -24.5, 15, 0, -90));
+function wrap(transform) { const d = document.createElement('div'); d.className = 'solid'; d.style.transform = transform; return d; }
+const base = ring => [[0, 24, ring], [3, 24, ring]];
+
+function makeHat(ring) {            // 탐험가 모자
+  const root = wrap('');
+  root.appendChild(lathe([...base(ring),
+    [3.4, 22, '#c4a066'], [6, 26.5, '#c9a76c'], [7, 26.5, '#b8955a'], [7.4, 15, '#b8935a'], [12, 15, '#b8935a'],
+    [12.4, 15.7, '#4e3219'], [16, 15.7, '#4e3219'], [16.4, 14.8, '#b8935a'], [22, 13.8, '#b8935a'], [28, 10, '#c19a5c'], [31, 5, '#c9a56a']]));
+  const f1 = plane('', 'feather', 0, 14, 16, 0); f1.style.transform += ' rotateZ(-16deg)'; root.appendChild(f1);
+  const f2 = plane('', 'feather', 0, 14, -16, 180); f2.style.transform += ' rotateZ(-16deg)'; root.appendChild(f2);
   return root;
 }
-// 나뭇가지(그루터기 + 곁가지 + 잎)
-function makeBranch(ring) {
-  const root = document.createElement('div'); root.className = 'solid';
-  root.appendChild(lathe([
-    [0, 26, ring], [3, 26, ring], [3.6, 13, '#5a3d24'], [10, 11, '#6b4a2a'], [18, 9.5, '#4e3320'],
-    [26, 9, '#6b4a2a'], [34, 8, '#5a3d24'], [40, 8, '#6b4a2a'], [41, 7, '#dcb678'], [42, 7, '#c9a063']
-  ]));
-  // 곁가지
-  const arm = document.createElement('div'); arm.className = 'solid';
-  arm.style.transform = 'translateY(-26px) rotateZ(52deg)';
-  arm.appendChild(lathe([[0, 4.5, '#5a3d24'], [10, 4, '#6b4a2a'], [20, 3, '#4e3320'], [21, 2.8, '#dcb678']]));
-  arm.appendChild(plane('', 'leaf', 0, 22, 0, 0));
-  arm.appendChild(plane('', 'leaf', 0, 24, 0, 90));
+function tube(r, y0, y1, color, n) {   // 옆면을 면으로 둘러 세운 원통 (비스듬히 봐도 속이 차 보임)
+  n = n || 14;
+  const g = wrap(''), w = 2 * Math.PI * r / n + 1.4, h = y1 - y0;
+  for (let k = 0; k < n; k++) {
+    const e = document.createElement('div'); e.className = 'plane';
+    const lit = 58 + 42 * Math.abs(Math.cos(k * 2 * Math.PI / n - .9));
+    e.style.cssText = `width:${w}px;height:${h}px;margin:${-h}px 0 0 ${-w / 2}px;background:color-mix(in srgb, ${color} ${lit}%, #000);` +
+      `transform:translateY(${-y0}px) rotateY(${k * 360 / n}deg) translateZ(${r}px)`;
+    g.appendChild(e);
+  }
+  return g;
+}
+function makeScope(ring) {          // 망원경
+  const root = wrap('');
+  root.appendChild(lathe([...base(ring), [3.4, 12, '#5a3b1e'], [8, 9, '#6b4a2a'], [11, 8, '#6b4a2a']]));
+  const arm = wrap('translateY(-10px) rotateZ(34deg)');
+  [[8.6, 0, 18, '#7a4a24'], [9.6, 18, 20.5, '#d4ab48'], [6.9, 20.5, 36, '#d9b44e'], [7.9, 36, 38.5, '#d4ab48'], [5.6, 38.5, 50, '#7a4a24'], [6.8, 50, 53, '#d4ab48']]
+    .forEach(([r, a, b, c]) => arm.appendChild(tube(r, a, b, c)));
+  arm.appendChild(disc(5.4, 53.2, '#8fc7de', true));
+  arm.appendChild(disc(8.6, 0.2, '#4a2e16', false));
   root.appendChild(arm);
-  // 꼭대기 잎
-  [[0,46,0],[0,46,90],[-5,40,45]].forEach(([x,y,r]) => root.appendChild(plane('', 'leaf', x, y, 0, r)));
-  const arm2 = document.createElement('div'); arm2.className = 'solid';
-  arm2.style.transform = 'translateY(-18px) rotateZ(-48deg)';
-  arm2.appendChild(lathe([[0, 3.6, '#5a3d24'], [12, 3, '#6b4a2a'], [13, 2.8, '#dcb678']]));
-  arm2.appendChild(plane('', 'leaf', 0, 14, 0, 0));
-  arm2.appendChild(plane('', 'leaf', 0, 14, 0, 90));
-  root.appendChild(arm2);
+  return root;
+}
+function makeCompass(ring) {        // 나침반
+  const root = wrap('');
+  root.appendChild(lathe([...base(ring), [3.4, 21, '#9c7424'], [8, 22, '#c9a03c'], [12, 22, '#d9b44a'], [12.4, 19, '#d9b44a'], [13.4, 19, '#efe3c0']]));
+  const flat = wrap('translateY(-14.6px) rotateX(90deg)');
+  [0, 90, 180, 270].forEach(a => { const t = document.createElement('div'); t.className = 'tick'; t.style.transform = `rotate(${a}deg) translateY(-14.5px)`; flat.appendChild(t); });
+  const nd = document.createElement('div'); nd.className = 'needle'; flat.appendChild(nd);
+  root.appendChild(flat);
+  const knob = wrap('translate3d(0,-14px,-22px)'); knob.appendChild(lathe([[0, 3.6, '#c9a03c'], [6, 3.6, '#d9b44a']])); root.appendChild(knob);
+  root.appendChild(plane('', 'cring', 0, 27, -22, 0));
+  return root;
+}
+function makeLantern(ring) {        // 랜턴
+  const root = wrap('');
+  root.appendChild(lathe([...base(ring), [3.4, 13.5, '#2b2622'], [7, 13.5, '#2b2622'], [8, 11.5, '#3a332c']]));
+  root.appendChild(lathe([[8, 11, 'rgba(255,196,96,.30)'], [18, 12, 'rgba(255,200,110,.30)'], [32, 10.5, 'rgba(255,196,96,.30)']], 2));
+  [45, 135, 225, 315].forEach(a => { const p = document.createElement('div'); p.className = 'plane bar3'; p.style.transform = `rotateY(${a}deg) translate3d(0,-20px,11px)`; root.appendChild(p); });
+  const cap = wrap('translateY(-32px)');
+  cap.appendChild(lathe([[0, 13, '#2b2622'], [2, 12.5, '#3a332c'], [3, 9, '#2b2622'], [10, 3.6, '#3a332c'], [11, 3.6, '#3a332c']]));
+  root.appendChild(cap);
+  root.appendChild(plane('', 'flame', 0, 19, 0, 0)); root.appendChild(plane('', 'flame', 0, 19, 0, 90));
+  root.appendChild(plane('', 'hring', 0, 50, 0, 0));
   return root;
 }
 
 /* ---------- 렌더링 ---------- */
 function renderAll() { renderTiles(); renderPawns(false); renderHUD(); renderCards(); }
-
-function visType(n) { return (n.hidden ? 'unknown' : n.type); }
+const visType = n => (n.hidden ? 'unknown' : n.type);
 
 function renderTiles() {
   const reach = new Set(G.phase === 'idle' && cur().alive ? G.nodes[cur().pos].adj : []);
-  const carrying = G.players.some(p => p.relic);
   document.querySelectorAll('.tile').forEach(el => {
-    const n = G.nodes[+el.dataset.id];
-    const vt = visType(n);
+    const n = G.nodes[+el.dataset.id], vt = visType(n);
     el.className = 'tile k-' + vt
       + (n.used && n.id !== 0 ? ' used' : '')
       + (reach.has(n.id) ? ' reach' + (G.sel ? ' sel' : '') : '')
       + (n.id === 0 && cur().relic ? ' goal' : '');
-    const ico = n.used && vt !== 'camp' ? USED_ICON[n.type] : ICON[vt];
-    el.querySelector('.ico').textContent = ico;
+    el.querySelector('.face').innerHTML = ic('i-' + vt);
     const pips = el.querySelector('.pips');
-    if (n.id === 0 || (n.used && !n.hidden)) pips.innerHTML = '';
-    else pips.innerHTML = [0,1,2].map(i => `<span class="${i < n.risk ? 'f' : 'e'}">●</span>`).join('');
-    el.querySelector('.nm').textContent = n.id === 0 ? 'CAMP' : '';
+    pips.innerHTML = (n.id === 0 || (n.used && !n.hidden)) ? '' : [0,1,2].map(i => `<i class="pip ${i < n.risk ? 'f' : ''}"></i>`).join('');
+    el.querySelector('.nm').textContent = n.id === 0 ? '캠프' : (n.used ? '지나옴' : TNAME[vt]);
     el.title = `${TNAME[vt]}${n.id ? ' · 위험도 ' + n.risk + '/3' : ''}`;
     el.setAttribute('aria-label', el.title);
     el.disabled = !reach.has(n.id);
   });
-  $('#board').classList.toggle('fog', carrying);
+  $('#board').classList.toggle('fog', G.players.some(p => p.relic));
 }
 
 function renderPawns(hop, idx) {
   const same = G.players.length === 2 && G.players[0].pos === G.players[1].pos;
-  const ps = parseFloat(getComputedStyle($('#board')).getPropertyValue('--ps')) || 1;
+  const ps = parseFloat($('#board').style.getPropertyValue('--ps')) || 1;
   G.players.forEach((p, i) => {
     const el = $('#pawn' + i), n = G.nodes[p.pos];
     el.style.left = (n.x / 10) + '%';
-    el.style.top = (n.y / 6 + 1.2) + '%';
+    el.style.top = (n.y / 6 + 1.6) + '%';
     el.style.marginLeft = (same ? (i ? 1 : -1) * 24 * ps : 0) + 'px';
     el.style.zIndex = i === G.cur ? 7 : 6;
     el.classList.toggle('active', i === G.cur && G.phase !== 'over');
@@ -641,27 +858,30 @@ function renderPawns(hop, idx) {
   });
 }
 
-function bar(v, max, cls) {
-  let s = ''; for (let i = 0; i < max; i++) s += `<i class="${i < v ? 'on' : ''}"></i>`;
-  return `<div class="bar ${cls}">${s}</div>`;
-}
 function renderHUD() {
   $('#players').innerHTML = G.players.map((p, i) => `
     <div class="pp ${i === G.cur ? 'active' : ''} ${p.alive ? '' : 'dead'}">
-      <div class="who"><span class="tok" style="background:${i ? 'var(--p2)' : 'var(--p1)'}"></span>${G.mode === 1 ? '탐험가' : p.name}${i ? ' 🪵' : ' 🎒'}<em class="turnmark">▶ 현재 차례</em></div>
-      <div class="stat"><span class="ic">❤️</span>${bar(p.hp, MAX_HP, 'hp')}<b>${p.hp}/${MAX_HP}</b></div>
-      <div class="stat"><span class="ic">🍖</span>${bar(p.food, MAX_FOOD, 'fd')}<b>${p.food}/${MAX_FOOD}</b></div>
-      <div class="badges"><span class="${p.relic ? 'on' : ''}">💎 유물 ${p.relic ? '획득!' : '미획득'}</span><span class="sh ${p.shield ? 'on' : ''}">🛡 방어막</span></div>
+      <div class="who"><span class="nm"><i class="tok" style="background:${RING[i]}"></i>${G.mode === 1 ? '탐험가' : p.name}</span>
+        <span class="sb">${pawnById(p.pawn).name}</span><span class="turnmark">현재 차례</span></div>
+      <div class="meters">
+        <div class="meter hp">${ic('i-heart')}<div class="track"><i style="width:${p.hp / MAX_HP * 100}%"></i></div><b>${p.hp}/${MAX_HP}</b></div>
+        <div class="meter fd">${ic('i-ration')}<div class="track"><i style="width:${p.food / MAX_FOOD * 100}%"></i></div><b>${p.food}/${MAX_FOOD}</b></div>
+      </div>
+      <div class="slots">
+        <div class="slot ${p.relic ? 'on' : ''}">${ic('i-relic')}<small>${p.relic ? '유물 획득' : '유물 없음'}</small></div>
+        <div class="slot sh ${p.shield ? 'on' : ''}">${ic('i-guard')}<small>방어막</small></div>
+      </div>
     </div>`).join('');
   $('#turn').textContent = Math.min(G.turn, G.maxTurn);
+  $('#turnbar').style.width = (Math.min(G.turn, G.maxTurn) / G.maxTurn * 100) + '%';
   $('#turnbox').classList.toggle('warn', G.maxTurn - G.turn < 4);
 }
 
 const CARDS = [
-  { k:'move',   name:'이동', emoji:'👣', desc:'인접 타일로 1칸 이동', cost:'식량 -1' },
-  { k:'gather', name:'채집', emoji:'🧺', desc:'제자리에서 식량을 모은다', cost:'식량 +2' },
-  { k:'guard',  name:'방어', emoji:'🛡️', desc:'다음 피해를 3 줄인다', cost:'방어막 1회' },
-  { k:'heal',   name:'치유', emoji:'🌿', desc:'상처를 치료한다', cost:'체력 +3 · 식량 -1' }
+  { k:'move',   name:'이동', icon:'i-move',   desc:'인접 타일로 한 칸 이동', cost:'식량 -1' },
+  { k:'gather', name:'채집', icon:'i-gather', desc:'제자리에서 식량을 모은다', cost:'식량 +2' },
+  { k:'guard',  name:'방어', icon:'i-guard',  desc:'다음 피해를 3 줄여준다', cost:'방어막 1회' },
+  { k:'heal',   name:'치유', icon:'i-heal',   desc:'약초로 상처를 치료한다', cost:'체력 +3 · 식량 -1' }
 ];
 function cardDisabled(k) {
   const p = cur();
@@ -675,8 +895,8 @@ function renderCards() {
   $('#cards').innerHTML = CARDS.map((c, i) => `
     <button class="card ${c.k === 'move' && G.sel ? 'sel' : ''}" data-k="${c.k}" ${cardDisabled(c.k) ? 'disabled' : ''}>
       <span class="key">${i + 1}</span>
-      <div class="art">${c.emoji}</div>
-      <h3>${c.name}</h3><p>${c.desc}</p><div class="cost">${c.cost}</div>
+      <div class="med">${ic(c.icon)}</div>
+      <div class="tx"><h3>${c.name}</h3><p>${c.desc}</p><span class="cost">${c.cost}</span></div>
     </button>`).join('');
   document.querySelectorAll('.card').forEach(b => b.addEventListener('click', () => useCard(b.dataset.k)));
 }
@@ -704,7 +924,7 @@ function useCard(k) {
     showBanner('숲을 뒤져 먹을 것을 모았다.', '<span class="pos">식량 +2</span>');
   } else if (k === 'guard') {
     p.shield = 1;
-    showBanner('방어 자세를 취했다. 다음 피해를 줄여 준다.', '<span class="pos">🛡 방어막</span>');
+    showBanner('방어 자세를 취했다. 다음 피해를 줄여 준다.', '<span class="pos">방어막 생성</span>');
   } else if (k === 'heal') {
     p.food -= 1; p.hp = clamp(p.hp + 3, 0, MAX_HP);
     showBanner('상처에 약초를 바르고 숨을 골랐다.', '<span class="pos">체력 +3</span> · <span class="neg">식량 -1</span>');
@@ -734,12 +954,11 @@ function arrive(p, node, notes) {
   node.hidden = false;
   renderTiles(); renderHUD();
 
-  // 2인: 유물 든 상대와 같은 타일 → 빼앗기
-  if (G.mode === 2 && node.id !== 0) {
+  if (G.mode === 2 && node.id !== 0) {    // 유물 든 상대와 같은 타일 → 빼앗기
     const o = other();
     if (o.relic && o.pos === p.pos) {
       o.relic = false; p.relic = true;
-      showBanner(`${p.name}이(가) ${o.name}의 유물을 빼앗았다!`, '<span class="pos">💎 유물 강탈!</span>');
+      showBanner(`${p.name}이(가) ${o.name}의 유물을 빼앗았다!`, '<span class="pos">유물 강탈!</span>');
       renderHUD(); renderTiles();
     }
   }
@@ -756,14 +975,34 @@ function arrive(p, node, notes) {
   endTurn();
 }
 
+/* 사건 모달 일러스트: 양피지 + 잉크 실루엣 + 엠블럼 */
+function sceneSVG(ev) {
+  const t = THEME[ev.theme], r = seeded(ev.title.length * 7 + 3);
+  let trees = '';
+  for (let i = 0; i < 18; i++) {
+    const x = i * 33 - 10 + r() * 14, h = 55 + r() * 60, w = 22 + r() * 14, bs = 205;
+    trees += `<path d="M${x} ${bs} L${x + w / 2} ${bs - h} L${x + w} ${bs} Z" fill="#2e2010" opacity="${.5 + r() * .35}"/>`;
+  }
+  let stars = '';
+  for (let i = 0; i < 9; i++) stars += `<circle cx="${20 + r() * 520}" cy="${14 + r() * 80}" r="${1 + r() * 1.6}" fill="${t.wash}" opacity=".6"/>`;
+  return `<svg class="scene" viewBox="0 0 560 200" preserveAspectRatio="xMidYMid slice" role="img" aria-label="${ev.title}">
+    <defs><radialGradient id="sg" cx="50%" cy="48%" r="70%"><stop offset="0" stop-color="#f4e6bb"/><stop offset="1" stop-color="#cfb27a"/></radialGradient></defs>
+    <rect width="560" height="200" fill="url(#sg)"/><rect width="560" height="200" fill="${t.tint}"/>
+    <path d="M0 150 Q70 110 140 140 T280 130 T420 138 T560 120 V200 H0 Z" fill="#5a4220" opacity=".28"/>
+    ${stars}${trees}
+    <circle cx="280" cy="96" r="76" fill="rgba(244,230,187,.92)" stroke="#2e2010" stroke-width="3"/>
+    <circle cx="280" cy="96" r="68" fill="${t.tint}" stroke="#2e2010" stroke-width="1"/>
+    <g transform="translate(280 96) scale(1.75) translate(-32 -32)" class="emb" style="--wash:${t.wash}66"><use href="#e-${ev.emb}" width="64" height="64"/></g>
+    <rect x="3" y="3" width="554" height="194" fill="none" stroke="#2e2010" stroke-width="1.5" opacity=".6"/>
+  </svg>`;
+}
+
 function openEvent(node, notes) {
   if (!node.ev) node.ev = pick(EVENTS[node.type]);
   const ev = node.ev;
   G.phase = 'modal'; G.curNode = node; G.pendingNotes = notes || [];
-  $('#martArea').className = 'art-m th-' + ev.theme;
-  let ff = ''; for (let i = 0; i < 7; i++) ff += `<span class="ff" style="left:${8 + rnd(84)}%;top:${15 + rnd(60)}%;animation-delay:${-rnd(50) / 10}s"></span>`;
-  $('#martArea').innerHTML = `<div class="mist"></div><div class="trees"></div><div class="trees b"></div>${ff}<div class="emoji">${ev.emoji}</div>`;
-  $('#mkick').textContent = ({ danger:'⚠ 위험한 사건', reward:'✦ 뜻밖의 발견', food:'🍃 숲의 은혜', relic:'💎 유물의 부름' })[node.type];
+  $('#martArea').innerHTML = sceneSVG(ev);
+  $('#mkick').textContent = THEME[ev.theme].kick;
   $('#mtitle').textContent = ev.title;
   $('#mstory').textContent = ev.story;
   const p = cur();
@@ -773,9 +1012,10 @@ function openEvent(node, notes) {
       <span class="n">${i + 1}</span><span class="t">${o.label}<small>${o.hint}${poor ? ' (식량 부족)' : ''}</small></span></button>`;
   }).join('');
   document.querySelectorAll('.opt').forEach(b => b.addEventListener('click', () => chooseOpt(+b.dataset.i)));
-  $('#mclose').style.display = ev.required && node.type !== 'relic' ? 'none' : '';
+  const mandatory = ev.required && node.type !== 'relic';
+  $('#mclose').style.display = mandatory ? 'none' : '';
   $('#mclose').title = node.type === 'relic' ? '물러나기' : '지나치기';
-  $('#mnote').textContent = ev.required && node.type !== 'relic' ? '이 사건은 선택을 해야 넘어갈 수 있습니다.' : '✕ 를 누르면 이 사건을 지나칩니다. (턴은 소모됩니다)';
+  $('#mnote').textContent = mandatory ? '이 사건은 선택을 해야 넘어갈 수 있습니다.' : '오른쪽 위 닫기 버튼을 누르면 이 사건을 지나칩니다. (턴은 소모됩니다)';
   setBlocked(true);
   $('#modal').classList.remove('hidden');
   const first = $('.opt:not(:disabled)'); if (first) first.focus();
@@ -810,16 +1050,16 @@ function chooseOpt(i) {
   const dh = p.hp - before.hp, df = p.food - before.food;
   if (dh) chips.push(`<span class="${dh > 0 ? 'pos' : 'neg'}">체력 ${dh > 0 ? '+' : ''}${dh}</span>`);
   if (df) chips.push(`<span class="${df > 0 ? 'pos' : 'neg'}">식량 ${df > 0 ? '+' : ''}${df}</span>`);
-  if (p.relic && !before.relic) chips.push('<span class="pos">💎 유물 획득!</span>');
-  if (p.shield && !before.shield) chips.push('<span class="pos">🛡 방어막</span>');
-  if (!p.shield && before.shield) chips.push('<span class="pos">🛡 방어막이 피해를 막았다</span>');
+  if (p.relic && !before.relic) chips.push('<span class="pos">유물 획득!</span>');
+  if (p.shield && !before.shield) chips.push('<span class="pos">방어막 생성</span>');
+  if (!p.shield && before.shield) chips.push('<span class="pos">방어막이 피해를 막았다</span>');
   const all = [...G.pendingNotes, ...chips].join(' · ');
 
   closeModal();
   G.phase = 'busy';
   showBanner(text + (p.relic && !before.relic ? ' 이제 캠프로 돌아가야 한다!' : ''), all);
   renderAll();
-  if (p.relic && !before.relic) msg('💎 유물을 얻었다! 빛나는 ⛺캠프로 돌아가세요.');
+  if (p.relic && !before.relic) msg('유물을 얻었다! 빛나는 캠프 타일로 돌아가세요.');
   setTimeout(() => { if (!checkDeath(p)) endTurn(); }, 450);
 }
 
@@ -846,7 +1086,7 @@ function endTurn() {
   else { G.cur = 1 - G.cur; if (G.cur === 0) G.turn++; }
   if (G.turn > G.maxTurn) { return timeUp(); }
   renderAll();
-  msg(G.mode === 2 ? `${cur().name}의 차례입니다.` : (G.turn >= G.maxTurn - 3 ? '⏳ 해가 저문다... 서둘러야 한다!' : '다음 행동을 고르세요.'));
+  msg(G.mode === 2 ? `${cur().name}의 차례입니다.` : (G.turn >= G.maxTurn - 3 ? '해가 저문다... 서둘러야 한다!' : '다음 행동을 고르세요.'));
   setTimeout(() => { if (G.phase === 'busy') { G.phase = 'idle'; renderAll(); } }, 500);
 }
 
@@ -865,38 +1105,65 @@ function finish(win, p, text) {
   renderAll();
   const r = $('#result');
   r.className = 'backdrop ' + (win ? 'win' : 'lose');
-  if (G.mode === 1) {
-    $('#rem').textContent = win ? '🏆' : '💀';
-    $('#rtitle').textContent = win ? '승리!' : '패배';
-  } else {
-    $('#rem').textContent = '🏆';
-    $('#rtitle').textContent = `${p.name} 승리!`;
-  }
+  $('#rem').innerHTML = `<use href="#${win ? 'i-relic' : 'i-danger'}"/>`;
+  $('#rtitle').textContent = G.mode === 1 ? (win ? '승리!' : '패배') : `${p.name} 승리!`;
   $('#rtext').textContent = text + ` (${Math.min(G.turn, G.maxTurn)}턴)`;
   setTimeout(() => r.classList.remove('hidden'), 700);
 }
 
+/* ---------- 말 선택 / 메뉴 ---------- */
+let pickState = null;
+function pawnPreview(def, ring) {
+  const pv = document.createElement('div'); pv.className = 'pv';
+  pv.innerHTML = '<div class="tilt"><div class="spin"></div></div>';
+  pv.querySelector('.spin').appendChild(def.build(ring));
+  return pv;
+}
+function renderPick() {
+  const s = pickState, who = s.chosen.length;
+  $('#pickTitle').textContent = s.mode === 1 ? '말을 고르세요' : `플레이어 ${who + 1}의 말을 고르세요`;
+  $('#pickDesc').textContent = s.mode === 1 ? '탐험을 함께할 말을 하나 선택하세요.' : (who === 0 ? '먼저 플레이어 1이 고릅니다. 고른 말은 상대가 쓸 수 없습니다.' : '남은 말 중에서 고르세요.');
+  const g = $('#pgrid'); g.innerHTML = '';
+  PAWNS.forEach(def => {
+    const taken = s.chosen.includes(def.id);
+    const b = document.createElement('button'); b.className = 'pbtn'; b.disabled = taken;
+    b.innerHTML = `<div class="pvbox"></div><b>${def.name}</b><small>${def.desc}</small>`;
+    b.querySelector('.pvbox').appendChild(pawnPreview(def, RING[who]));
+    b.addEventListener('click', () => {
+      s.chosen.push(def.id);
+      if (s.chosen.length === s.mode) { $('#pick').classList.add('hidden'); startMode(s.mode, s.chosen); }
+      else renderPick();
+    });
+    g.appendChild(b);
+  });
+}
+function openPick(mode) {
+  pickState = { mode, chosen: [] };
+  $('#menu').classList.add('hidden'); $('#pick').classList.remove('hidden');
+  renderPick();
+}
+function startMode(m, pawns) {
+  $('#menu').classList.add('hidden');
+  closeModal();
+  newGame(m, pawns);
+}
+
 /* ---------- 입력 ---------- */
 $('#mclose').addEventListener('click', skipEvent);
-$('#btn1').addEventListener('click', () => startMode(1));
-$('#btn2').addEventListener('click', () => startMode(2));
+$('#btn1').addEventListener('click', () => openPick(1));
+$('#btn2').addEventListener('click', () => openPick(2));
+$('#pickBack').addEventListener('click', () => { $('#pick').classList.add('hidden'); $('#menu').classList.remove('hidden'); });
 $('#btnResume').addEventListener('click', () => $('#menu').classList.add('hidden'));
-$('#again').addEventListener('click', () => { $('#result').classList.add('hidden'); startMode(G.mode); });
+$('#again').addEventListener('click', () => { $('#result').classList.add('hidden'); startMode(G.mode, G.pawns); });
 $('#toMenu').addEventListener('click', () => { $('#result').classList.add('hidden'); $('#btnResume').style.display = 'none'; $('#menu').classList.remove('hidden'); });
 $('#menuBtn').addEventListener('click', () => {
   if (G.phase === 'modal') return;
   $('#btnResume').style.display = G.phase === 'over' ? 'none' : '';
   $('#menu').classList.remove('hidden');
 });
-function startMode(m) {
-  $('#menu').classList.add('hidden');
-  closeModal();
-  newGame(m);
-  setTimeout(() => { if (G.phase === 'idle') renderAll(); }, 0);
-}
 document.addEventListener('keydown', e => {
   if (!G) return;
-  if (!$('#menu').classList.contains('hidden') || !$('#result').classList.contains('hidden')) return;
+  if (['#menu', '#result', '#pick'].some(s => !$(s).classList.contains('hidden'))) return;
   if (G.phase === 'modal') {
     if (e.key >= '1' && e.key <= '3') { const b = document.querySelector(`.opt[data-i="${+e.key - 1}"]`); if (b && !b.disabled) b.click(); }
     else if (e.key === 'Escape') skipEvent();
@@ -907,7 +1174,7 @@ document.addEventListener('keydown', e => {
 });
 
 /* ---------- 시작 ---------- */
-newGame(1);
+newGame(1, ['hat']);
 </script>
 </body>
 </html>
