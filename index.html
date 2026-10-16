@@ -317,6 +317,18 @@ main{flex:1;display:flex;flex-direction:column;align-items:center;justify-conten
 #confetti i{position:absolute;top:-24px;display:block;opacity:0;animation:cfall linear forwards}
 @keyframes cfall{0%{opacity:1;transform:translateY(0) rotate(0) rotateY(0)}100%{opacity:.9;transform:translateY(110vh) rotate(720deg) rotateY(540deg)}}
 
+
+/* ---------- 코치 팁 ---------- */
+#coach{position:fixed;left:50%;bottom:122px;transform:translate(-50%,16px);z-index:40;display:flex;align-items:center;gap:11px;
+  width:max-content;max-width:min(560px,92vw);padding:10px 12px 10px 12px;border-radius:8px;
+  background:linear-gradient(#f4e6bb,#dcc489);color:var(--ink);border:2px solid #3a2412;box-shadow:0 0 0 2px var(--brass2),0 10px 26px #000a;
+  opacity:0;pointer-events:none;transition:opacity .3s,transform .3s}
+#coach.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+#coach .ctag{flex:0 0 auto;padding:3px 10px;border-radius:12px;background:radial-gradient(circle at 35% 30%,#c4482e,#7a2414);color:#f6e6c0;font-weight:800;font-size:12px;letter-spacing:.1em}
+#coach p{font-size:14px;line-height:1.55;font-weight:700}
+#coach button{flex:0 0 auto;padding:5px 12px;border-radius:6px;border:1.5px solid #3a2412;background:linear-gradient(#fff6d6,#e0c98f);font-weight:800;font-size:13px;color:var(--ink)}
+#coach button:hover{filter:brightness(1.1)}
+
 /* ---------- 시작 연출: 유물 위치 ---------- */
 #intro{display:none;position:absolute;inset:0;z-index:28;cursor:pointer}
 #intro.on{display:block;animation:introa 3.3s ease forwards}
@@ -568,6 +580,8 @@ kbd{display:inline-block;min-width:22px;padding:1px 6px;border:1px solid #c79a3b
 
 <footer id="cards"></footer>
 
+<div id="coach" role="status"><span class="ctag">팁</span><p id="coachText"></p><button id="coachOk">확인</button></div>
+
 <!-- 사건 모달 -->
 <div id="modal" class="backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="mtitle">
   <div class="sheet">
@@ -593,6 +607,7 @@ kbd{display:inline-block;min-width:22px;padding:1px 6px;border:1px solid #c79a3b
     <button class="bigbtn" id="btn1">혼자 플레이 (컴퓨터 대결)</button>
     <button class="bigbtn alt" id="btn2">2인 로컬 대전</button>
     <button class="bigbtn alt" id="btnHow">게임 방법</button>
+    <button class="bigbtn alt" id="btnTips">게임 팁: 켜짐</button>
     <button class="bigbtn alt" id="btnResume" style="display:none">게임으로 돌아가기</button>
   </div></div>
 </div>
@@ -890,6 +905,54 @@ const Snd = (() => {
     sync() { $('#btnMusic').classList.toggle('off', !st.music); $('#btnSfx').classList.toggle('off', !st.sfx); }
   };
 })();
+
+
+/* ---------- 코치 팁 (처음 한 번만, 끌 수 있음) ---------- */
+const TIPS = {
+  start:   '이동 카드를 누르고 빛나는 타일을 눌러 한 칸 이동해 보세요. 타일을 바로 눌러도 됩니다.',
+  hidden:  '미지 타일은 도착해야 정체가 드러납니다. 타일 아래 빨간 점이 위험도예요.',
+  event:   '사건은 선택지 3개 중 하나를 고릅니다. 선택지마다 위험과 보상이 달라요. (처음 안내)',
+  lowfood: '식량이 거의 없어요! 채집 카드로 식량을 모으세요. 식량이 0이면 이동할 때 체력이 -2입니다.',
+  lowhp:   '체력이 위험해요. 치유 카드(식량 -1)로 회복하세요.',
+  trap:    '함정 카드: 지금 서 있는 곳에 보이지 않는 덫을 놓습니다. 상대가 밟으면 피해 3!',
+  trapped: '함정에 걸렸어요! 상대가 놓은 보이지 않는 덫입니다. 방어막이 있으면 막아줍니다.',
+  relicGot:'유물을 손에 넣었어요! 빛나는 캠프로 돌아가세요. 상대가 같은 타일에 오면 빼앗기니, 방어 카드로 방어막을 만들어 두면 한 번 막을 수 있어요.',
+  oppRelic:'상대가 유물을 들고 있어요! 같은 타일에 도착하면 공격해서 빼앗을 수 있습니다. 빨갛게 깜빡이는 타일을 노리세요.',
+  lost:    '유물을 빼앗겼어요! 상대를 쫓아 같은 타일에 도착하면 되찾을 수 있습니다.'
+};
+const Tips = (() => {
+  let st = { off:false, seen:[] }, queue = [], showing = false, hideT = 0;
+  try { const v = JSON.parse(localStorage.getItem('wp_tips') || '{}'); if (v.off) st.off = true; if (Array.isArray(v.seen)) st.seen = v.seen; } catch (e) {}
+  const save = () => { try { localStorage.setItem('wp_tips', JSON.stringify(st)); } catch (e) {} };
+  function next() {
+    const el = $('#coach');
+    if (!queue.length) { showing = false; el.classList.remove('show'); return; }
+    showing = true; $('#coachText').textContent = queue.shift(); el.classList.add('show');
+    clearTimeout(hideT); hideT = setTimeout(next, 9000);
+  }
+  return {
+    get on() { return !st.off; },
+    take(id) { if (st.off || st.seen.includes(id)) return null; st.seen.push(id); save(); return TIPS[id]; },   // 모달용: 문구만 꺼내 쓴다
+    show(id) {
+      if (G && G.phase === 'modal') return;
+      const t = this.take(id); if (!t) return;
+      queue.push(t); if (!showing) next();
+    },
+    dismiss() { clearTimeout(hideT); next(); },
+    toggle() { st.off = !st.off; if (!st.off) st.seen = []; save(); queue = []; if (st.off) { showing = false; $('#coach').classList.remove('show'); } this.sync(); },
+    sync() { $('#btnTips').textContent = '게임 팁: ' + (st.off ? '꺼짐' : '켜짐'); }
+  };
+})();
+function tip(id) { if (G && !cur().cpu) Tips.show(id); }
+function checkTips() {            // 내 차례가 시작될 때 상황에 맞는 팁 하나를 띄운다
+  if (!G || G.phase !== 'idle' || cur().cpu) return;
+  const p = cur(), o = G.players.length === 2 ? other() : null;
+  Tips.show('start');
+  if (p.food <= 1) return Tips.show('lowfood');
+  if (p.hp <= 3) return Tips.show('lowhp');
+  if (o && o.relic && !p.relic) return Tips.show('oppRelic');
+  if (G.turn >= 3 && trapAllowed(p, G.cur)) return Tips.show('trap');
+}
 
 /* ---------- 상태 ---------- */
 let G = null;
@@ -1267,7 +1330,7 @@ function doMove(id) {
 
 function arrive(p, node, notes) {
   if (checkDeath(p)) return;
-  if (node.hidden) Snd.sfx('reveal');
+  if (node.hidden) { Snd.sfx('reveal'); if (!p.cpu) setTimeout(() => tip('hidden'), 900); }
   node.hidden = false;
   let trapMsg = null;
   const ti = G.traps.findIndex(t => t.node === node.id && t.owner !== G.cur);
@@ -1277,6 +1340,7 @@ function arrive(p, node, notes) {
     Snd.sfx('trap'); if (r.dmg) setTimeout(() => Snd.sfx('hurt'), 160); shakeBoard();
     trapMsg = r.dmg ? '함정이다! 보이지 않는 덫이 발동했다.' : '함정이었지만 방어막이 막아냈다!';
     notes.push(r.dmg ? `<span class="neg">함정! 체력 -${r.dmg}</span>` : '<span class="pos">방어막이 함정을 막았다</span>');
+    if (!p.cpu) setTimeout(() => tip('trapped'), 1500);
     renderAll();
     if (checkDeath(p)) return;
   }
@@ -1297,6 +1361,8 @@ function arrive(p, node, notes) {
       Snd.sfx('steal'); setTimeout(() => Snd.sfx('hurt'), 220); shakeBoard();
       showAlert('공격!', `${p.name}이(가) ${o.name}의 유물을 빼앗았다`, r.dmg ? `${o.name} 체력 -${r.dmg}` : `${o.name}의 방어막이 피해를 막았다`);
       msg(`${p.name}이(가) 유물을 빼앗았다! 이제 캠프로 돌아가야 한다.`);
+      if (!p.cpu) setTimeout(() => Tips.show('relicGot'), 2600);
+      else if (!o.cpu) setTimeout(() => Tips.show('lost'), 2600);      // 컴퓨터에게 빼앗긴 경우
       renderAll();
       if (o.hp <= 0) {
         o.hp = 0; o.alive = false; renderAll();
@@ -1368,7 +1434,7 @@ function openEvent(node, notes) {
   const mandatory = ev.required && node.type !== 'relic';
   $('#mclose').style.display = mandatory ? 'none' : '';
   $('#mclose').title = node.type === 'relic' ? '물러나기' : '지나치기';
-  $('#mnote').textContent = mandatory ? '이 사건은 선택을 해야 넘어갈 수 있습니다.' : '오른쪽 위 닫기 버튼을 누르면 이 사건을 지나칩니다. (턴은 소모됩니다)';
+  $('#mnote').textContent = (Tips.take('event') ? TIPS.event + '  ' : '') + (mandatory ? '이 사건은 선택을 해야 넘어갈 수 있습니다.' : '오른쪽 위 닫기 버튼을 누르면 이 사건을 지나칩니다. (턴은 소모됩니다)');
   setBlocked(true);
   $('#modal').classList.remove('hidden');
   const first = $('.opt:not(:disabled)'); if (first) first.focus();
@@ -1414,7 +1480,7 @@ function chooseOpt(i) {
   setTimeout(() => Snd.sfx(p.relic && !before.relic ? 'relic' : dh < 0 ? 'hurt' : (dh > 0 || df > 0 ? 'good' : 'click')), 160);
   showBanner((p.cpu ? `[${ev.title}] ` : '') + text + (p.relic && !before.relic ? ' 이제 캠프로 돌아가야 한다!' : ''), all);
   renderAll();
-  if (p.relic && !before.relic) msg('유물을 얻었다! 빛나는 캠프 타일로 돌아가세요.');
+  if (p.relic && !before.relic) { msg('유물을 얻었다! 빛나는 캠프 타일로 돌아가세요.'); if (!p.cpu) setTimeout(() => tip('relicGot'), 1700); }
   setTimeout(() => { if (!checkDeath(p)) endTurn(); }, 450);
 }
 
@@ -1452,7 +1518,7 @@ function endTurn() {
   setTimeout(() => {
     if (G !== g || G.phase !== 'busy') return;
     if (cur().cpu) { G.phase = 'cpu'; renderAll(); msg('컴퓨터가 생각 중입니다...'); setTimeout(cpuTurn, 800); }
-    else { G.phase = 'idle'; renderAll(); }
+    else { G.phase = 'idle'; renderAll(); setTimeout(checkTips, 600); }
   }, 500);
 }
 
@@ -1599,7 +1665,7 @@ function introRelic() {            // 게임 시작 시 유물 위치를 연출�
     const who = G.mode === 2 ? `선공은 ${cur().name}!` : '';
     if (who) showBanner(who, '순서는 매 판 무작위로 정해집니다');
     if (cur().cpu) { G.phase = 'cpu'; renderAll(); msg('컴퓨터가 먼저 시작합니다...'); setTimeout(cpuTurn, 1200); }
-    else { G.phase = 'idle'; renderAll(); msg(`${cur().name}의 차례입니다. 카드를 한 장 고르세요.`); }
+    else { G.phase = 'idle'; renderAll(); msg(`${cur().name}의 차례입니다. 카드를 한 장 고르세요.`); setTimeout(checkTips, 700); }
   };
   el.onclick = end;
   setTimeout(end, 3300);
@@ -1652,10 +1718,12 @@ $('#mclose').addEventListener('click', skipEvent);
 $('#btnMusic').addEventListener('click', () => Snd.toggleMusic());
 $('#btnSfx').addEventListener('click', () => Snd.toggleSfx());
 document.addEventListener('pointerdown', () => Snd.unlock());
-document.addEventListener('click', e => { if (e.target.closest('.bigbtn,.pbtn,#menuBtn,#howClose')) Snd.sfx('click'); }, true);
+document.addEventListener('click', e => { if (e.target.closest('.bigbtn,.pbtn,#menuBtn,#howClose,#coachOk')) Snd.sfx('click'); }, true);
 $('#btn1').addEventListener('click', () => openPick(1));
 $('#btn2').addEventListener('click', () => openPick(2));
 $('#pickBack').addEventListener('click', () => { $('#pick').classList.add('hidden'); $('#menu').classList.remove('hidden'); });
+$('#btnTips').addEventListener('click', () => Tips.toggle());
+$('#coachOk').addEventListener('click', () => Tips.dismiss());
 $('#btnHow').addEventListener('click', () => { $('#menu').classList.add('hidden'); $('#howto').classList.remove('hidden'); });
 function closeHow() { $('#howto').classList.add('hidden'); $('#menu').classList.remove('hidden'); }
 $('#howClose').addEventListener('click', closeHow);
@@ -1682,7 +1750,7 @@ document.addEventListener('keydown', e => {
 });
 
 /* ---------- 시작 ---------- */
-Snd.sync();
+Snd.sync(); Tips.sync();
 newGame(1, ['hat']);
 </script>
 </body>
